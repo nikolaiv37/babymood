@@ -1,0 +1,465 @@
+{% liquid
+  assign s = section.settings
+  assign overlay_alpha = s.overlay_opacity | divided_by: 100.0
+%}
+
+<div
+  class="bm-home-hero color-{{ s.color_scheme }} gradient"
+  style="
+    --bm-hero-overlay-alpha: {{ overlay_alpha }};
+    --bm-hero-padding-top: {{ s.padding_top }}px;
+    --bm-hero-padding-bottom: {{ s.padding_bottom }}px;
+  "
+>
+  <div class="bm-home-hero__inner">
+    <div class="bm-home-hero__media" aria-hidden="{% if s.heading != blank %}true{% else %}false{% endif %}">
+      {%- if s.image_desktop != blank -%}
+        <img
+          class="bm-home-hero__image bm-home-hero__image--desktop"
+          src="{{ s.image_desktop | image_url: width: 2000 }}"
+          srcset="
+            {{ s.image_desktop | image_url: width: 800 }} 800w,
+            {{ s.image_desktop | image_url: width: 1200 }} 1200w,
+            {{ s.image_desktop | image_url: width: 1600 }} 1600w,
+            {{ s.image_desktop | image_url: width: 2000 }} 2000w
+          "
+          sizes="(min-width: 990px) 100vw, 0"
+          alt="{{ s.image_desktop.alt | default: s.heading | escape }}"
+          loading="eager"
+          fetchpriority="high"
+          width="{{ s.image_desktop.width }}"
+          height="{{ s.image_desktop.height }}"
+        >
+      {%- endif -%}
+      {%- if s.image_mobile != blank -%}
+        <img
+          class="bm-home-hero__image bm-home-hero__image--mobile"
+          src="{{ s.image_mobile | image_url: width: 1200 }}"
+          srcset="
+            {{ s.image_mobile | image_url: width: 600 }} 600w,
+            {{ s.image_mobile | image_url: width: 900 }} 900w,
+            {{ s.image_mobile | image_url: width: 1200 }} 1200w
+          "
+          sizes="(max-width: 989px) 100vw, 0"
+          alt="{{ s.image_mobile.alt | default: s.heading | escape }}"
+          loading="eager"
+          fetchpriority="high"
+          width="{{ s.image_mobile.width }}"
+          height="{{ s.image_mobile.height }}"
+        >
+      {%- elsif s.image_desktop != blank -%}
+        <img
+          class="bm-home-hero__image bm-home-hero__image--mobile"
+          src="{{ s.image_desktop | image_url: width: 1200 }}"
+          srcset="
+            {{ s.image_desktop | image_url: width: 600 }} 600w,
+            {{ s.image_desktop | image_url: width: 900 }} 900w,
+            {{ s.image_desktop | image_url: width: 1200 }} 1200w
+          "
+          sizes="(max-width: 989px) 100vw, 0"
+          alt="{{ s.image_desktop.alt | default: s.heading | escape }}"
+          loading="eager"
+          fetchpriority="high"
+          width="{{ s.image_desktop.width }}"
+          height="{{ s.image_desktop.height }}"
+        >
+      {%- endif -%}
+      <div class="bm-home-hero__overlay" aria-hidden="true"></div>
+    </div>
+
+    <div class="bm-home-hero__content">
+      {%- if s.heading != blank -%}
+        <h1 class="bm-home-hero__heading">{{ s.heading }}</h1>
+      {%- endif -%}
+
+      {%- if s.subheading != blank -%}
+        <p class="bm-home-hero__subheading">{{ s.subheading }}</p>
+      {%- endif -%}
+
+      {%- if s.primary_label != blank or s.secondary_label != blank -%}
+        <div class="bm-home-hero__actions">
+          {%- if s.primary_label != blank -%}
+            <a
+              class="bm-home-hero__btn bm-home-hero__btn--primary"
+              href="{{ s.primary_link | default: '#' }}"
+            >
+              {{ s.primary_label }}
+            </a>
+          {%- endif -%}
+          {%- if s.secondary_label != blank -%}
+            <a
+              class="bm-home-hero__btn bm-home-hero__btn--secondary"
+              href="{{ s.secondary_link | default: '#' }}"
+            >
+              {{ s.secondary_label }}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if s.chip_1 != blank or s.chip_2 != blank or s.chip_3 != blank -%}
+        <ul class="bm-home-hero__chips" role="list">
+          {%- if s.chip_1 != blank -%}
+            <li class="bm-home-hero__chip">
+              <span class="bm-home-hero__chip-dot" aria-hidden="true"></span>
+              {{ s.chip_1 }}
+            </li>
+          {%- endif -%}
+          {%- if s.chip_2 != blank -%}
+            <li class="bm-home-hero__chip">
+              <span class="bm-home-hero__chip-dot" aria-hidden="true"></span>
+              {{ s.chip_2 }}
+            </li>
+          {%- endif -%}
+          {%- if s.chip_3 != blank -%}
+            <li class="bm-home-hero__chip">
+              <span class="bm-home-hero__chip-dot" aria-hidden="true"></span>
+              {{ s.chip_3 }}
+            </li>
+          {%- endif -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .bm-home-hero {
+    --bm-hero-yellow: #ffd801;
+    --bm-hero-cream: #fffaf0;
+    --bm-hero-ink: #2f2a26;
+    --bm-hero-muted: rgba(47, 42, 38, 0.72);
+    --bm-hero-border: #efe6c8;
+    --bm-hero-radius: 24px;
+
+    position: relative;
+    padding-top: var(--bm-hero-padding-top, 24px);
+    padding-bottom: var(--bm-hero-padding-bottom, 32px);
+    padding-inline: clamp(12px, 4vw, 28px);
+    color: var(--bm-hero-ink);
+  }
+
+  .bm-home-hero__inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    border-radius: var(--bm-hero-radius);
+    background: var(--bm-hero-cream);
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(47, 42, 38, 0.05);
+    border: 1px solid var(--bm-hero-border);
+  }
+
+  .bm-home-hero__media {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--bm-hero-cream);
+  }
+
+  .bm-home-hero__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .bm-home-hero__image--desktop {
+    display: none;
+  }
+
+  .bm-home-hero__overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(255, 250, 240, 0) 40%, rgba(255, 250, 240, 0.9) 100%),
+      linear-gradient(135deg, rgba(255, 216, 1, calc(var(--bm-hero-overlay-alpha) * 0.45)), rgba(255, 250, 240, 0));
+  }
+
+  .bm-home-hero__content {
+    position: relative;
+    padding: 1.25rem 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    align-items: flex-start;
+  }
+
+  .bm-home-hero__heading {
+    margin: 0;
+    font-size: clamp(1.55rem, 4.4vw, 2rem);
+    line-height: 1.15;
+    font-weight: 750;
+    letter-spacing: -0.005em;
+    color: var(--bm-hero-ink);
+    text-wrap: balance;
+  }
+
+  .bm-home-hero__subheading {
+    margin: 0;
+    font-size: clamp(0.95rem, 2.6vw, 1.05rem);
+    line-height: 1.45;
+    color: var(--bm-hero-muted);
+    max-width: 52ch;
+  }
+
+  .bm-home-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.2rem;
+  }
+
+  .bm-home-hero__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.65rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.1;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+    border: 1px solid transparent;
+  }
+
+  .bm-home-hero__btn--primary {
+    background: var(--bm-hero-yellow);
+    color: var(--bm-hero-ink);
+    box-shadow: 0 2px 0 rgba(47, 42, 38, 0.08);
+  }
+
+  .bm-home-hero__btn--primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 216, 1, 0.35);
+  }
+
+  .bm-home-hero__btn--secondary {
+    background: #ffffff;
+    color: var(--bm-hero-ink);
+    border-color: var(--bm-hero-border);
+  }
+
+  .bm-home-hero__btn--secondary:hover {
+    background: var(--bm-hero-cream);
+  }
+
+  .bm-home-hero__chips {
+    list-style: none;
+    padding: 0;
+    margin: 0.4rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .bm-home-hero__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.34rem 0.65rem;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid var(--bm-hero-border);
+    color: var(--bm-hero-ink);
+    font-size: 0.78rem;
+    line-height: 1.2;
+    font-weight: 600;
+  }
+
+  .bm-home-hero__chip-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 999px;
+    background: var(--bm-hero-yellow);
+    box-shadow: 0 0 0 2px rgba(255, 216, 1, 0.22);
+    flex: 0 0 auto;
+  }
+
+  @media screen and (min-width: 750px) {
+    .bm-home-hero__content {
+      padding: 1.6rem 1.6rem 1.8rem;
+      gap: 1rem;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .bm-home-hero__inner {
+      grid-template-columns: 1.05fr 1fr;
+      align-items: stretch;
+    }
+
+    .bm-home-hero__media {
+      aspect-ratio: auto;
+      min-height: 480px;
+      height: 100%;
+    }
+
+    .bm-home-hero__image--mobile {
+      display: none;
+    }
+
+    .bm-home-hero__image--desktop {
+      display: block;
+    }
+
+    .bm-home-hero__content {
+      padding: 3rem 2.75rem;
+      justify-content: center;
+      gap: 1.1rem;
+    }
+
+    .bm-home-hero__heading {
+      font-size: clamp(2rem, 2.6vw, 2.6rem);
+    }
+
+    .bm-home-hero__subheading {
+      font-size: 1.05rem;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Baby Mood home hero",
+  "tag": "section",
+  "class": "section section-bm-home-hero",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Copy"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Монтесори легла и детски мебели за уютна детска стая"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Подбрани модели за спокойна рутина, повече самостоятелност и практично обзавеждане у дома."
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "Primary button label",
+      "default": "Разгледай Монтесори легла"
+    },
+    {
+      "type": "url",
+      "id": "primary_link",
+      "label": "Primary button link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Secondary button label",
+      "default": "Виж всички продукти"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Secondary button link"
+    },
+    {
+      "type": "header",
+      "content": "Trust chips"
+    },
+    {
+      "type": "text",
+      "id": "chip_1",
+      "label": "Chip 1",
+      "default": "14 дни връщане"
+    },
+    {
+      "type": "text",
+      "id": "chip_2",
+      "label": "Chip 2",
+      "default": "Доставка с Еконт"
+    },
+    {
+      "type": "text",
+      "id": "chip_3",
+      "label": "Chip 3",
+      "default": "Консултация преди поръчка"
+    },
+    {
+      "type": "header",
+      "content": "Images"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile image",
+      "info": "Falls back to desktop image if empty."
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    }
+  ],
+  "presets": [
+    {
+      "name": "Baby Mood home hero"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["index"]
+  }
+}
+{% endschema %}

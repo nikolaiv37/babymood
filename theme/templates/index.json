@@ -161,6 +161,7 @@
         "text_diehWk",
         "group_YjwFfd"
       ],
+      "disabled": true,
       "name": "t:names.hero",
       "settings": {
         "media_type_1": "image",
@@ -183,7 +184,7 @@
         "section_width": "page-width",
         "section_height": "large",
         "section_height_custom": 50,
-        "color_scheme": "scheme-6",
+        "color_scheme": "scheme-4",
         "toggle_overlay": true,
         "overlay_color": "#12121266",
         "overlay_style": "solid",
@@ -192,6 +193,26 @@
         "reflection_opacity": 75,
         "padding-block-start": 100,
         "padding-block-end": 72
+      }
+    },
+    "bm_home_hero_cUFUkR": {
+      "type": "bm-home-hero",
+      "name": "Baby Mood home hero",
+      "settings": {
+        "color_scheme": "",
+        "heading": "Монтесори легла и детски мебели за уютна детска стая",
+        "subheading": "Подбрани модели за спокойна рутина, повече самостоятелност и практично обзавеждане у дома.",
+        "primary_label": "Разгледай Монтесори легла",
+        "primary_link": "",
+        "secondary_label": "Виж всички продукти",
+        "secondary_link": "",
+        "chip_1": "14 дни връщане",
+        "chip_2": "Доставка с Еконт",
+        "chip_3": "Консултация преди поръчка",
+        "image_desktop": "shopify://shop_images/paidiki-koyketa-spitaki-fb970501-xylo-pe-1_d2cd4910-8b3e-4c46-b2a5-fb7f858151f2.jpg",
+        "overlay_opacity": 30,
+        "padding_top": 24,
+        "padding_bottom": 32
       }
     },
     "section_pDDeqj": {
@@ -1667,6 +1688,7 @@
   },
   "order": [
     "hero_jVaWmY",
+    "bm_home_hero_cUFUkR",
     "section_pDDeqj",
     "collection_list_F8whjF",
     "media_with_content_GUaMGU",
