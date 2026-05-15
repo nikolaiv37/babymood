@@ -62,4 +62,34 @@
   .product-media-container--zoomable.product-media-container--image {
     cursor: zoom-in;
   }
+
+  /* Baby Mood: vertical thumbnail polish — desktop, left/right only */
+  @media screen and (min-width: 750px) {
+    slideshow-controls[thumbnails]:is([pagination-position='left'], [pagination-position='right']) {
+      .slideshow-controls__thumbnails {
+        gap: 10px;
+      }
+
+      .slideshow-controls__thumbnail {
+        border-radius: 10px;
+        transition: outline-color 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .slideshow-controls__thumbnail img {
+        border-radius: 10px;
+      }
+
+      .slideshow-controls__thumbnail:hover {
+        outline: 2px solid rgba(255, 216, 1, 0.45);
+        outline-offset: 2px;
+      }
+
+      .slideshow-controls__thumbnail:is([aria-selected='true']) {
+        outline: 2px solid #ffd801;
+        outline-offset: 2px;
+        border-color: transparent;
+        box-shadow: 0 0 0 1px rgba(255, 216, 1, 0.25);
+      }
+    }
+  }
 {% endstylesheet %}
