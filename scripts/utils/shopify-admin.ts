@@ -171,16 +171,16 @@ export async function collectPaginated<TNode>(
     edges: Array<{ cursor: string; node: TNode }>
     pageInfo: { hasNextPage: boolean; endCursor: string | null }
   }>,
-  limit = 50
+  limit?: number
 ): Promise<TNode[]> {
   const items: TNode[] = []
   let after: string | null = null
 
-  while (items.length < limit) {
+  while (limit === undefined || items.length < limit) {
     const page = await fetchPage(after)
     for (const edge of page.edges) {
       items.push(edge.node)
-      if (items.length >= limit) break
+      if (limit !== undefined && items.length >= limit) break
     }
 
     if (!page.pageInfo.hasNextPage || !page.pageInfo.endCursor) break

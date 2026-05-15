@@ -86,32 +86,55 @@ async function main() {
   const collectionHandle = getStringArg(args, 'collection-handle')
   const tag = getStringArg(args, 'tag')
   const productType = getStringArg(args, 'product-type')
-  const limit = getNumberArg(args, 'limit') ?? 50
+  const limit = getNumberArg(args, 'limit')
   const outputFile = getStringArg(args, 'output-file') ?? `data/source/${timestampForFile()}-source-products.json`
 
   if (!collectionHandle && !tag && !productType) {
     throw new Error('Pass at least one selector: --collection-handle=, --tag=, or --product-type=')
   }
 
-  logger.info('Starting source product export', { collectionHandle, tag, productType, limit })
+  const productQuery = collectionHandle ? undefined : buildProductQuery({ tag, productType })
+
+  logger.info('Starting source product export', {
+    collectionHandle,
+    tag,
+    productType,
+    productQuery,
+    limit: limit ?? 'all'
+  })
+
   const products = collectionHandle
     ? await exportByCollection(client, collectionHandle, limit)
-    : await exportByProductQuery(client, buildProductQuery({ tag, productType }), limit)
+    : await exportByProductQuery(client, productQuery as string, limit)
 
   const file: SourceExportFile = {
     exportedAt: new Date().toISOString(),
-    source: { collectionHandle, tag, productType, limit },
+    source: { collectionHandle, tag, productType, limit: limit ?? products.length },
     products
   }
 
   const path = writeJsonFile(outputFile, file)
-  logger.success('Source product export saved', { path, productCount: products.length, logFile: logger.filePath })
+  logger.success('Source product export saved', {
+    path,
+    productCount: products.length,
+    limit: limit ?? 'all',
+    productQuery,
+    collectionHandle,
+    logFile: logger.filePath
+  })
+}
+
+const PAGE_SIZE = 50
+
+function pageSizeFor(limit: number | undefined, fetched: number): number {
+  if (limit === undefined) return PAGE_SIZE
+  return Math.max(1, Math.min(PAGE_SIZE, limit - fetched))
 }
 
 async function exportByCollection(
   client: ReturnType<typeof createShopifyAdminClient>,
   handle: string,
-  limit: number
+  limit: number | undefined
 ): Promise<SourceProduct[]> {
   const query = `#graphql
     ${PRODUCT_FIELDS}
@@ -125,15 +148,17 @@ async function exportByCollection(
     }
   `
 
+  let fetched = 0
   const nodes = await collectPaginated<ShopifyProductNode>(async (after) => {
     const data = await client.graphql<CollectionProductsResponse>(query, {
       handle,
-      first: Math.min(50, limit),
+      first: pageSizeFor(limit, fetched),
       after
     })
     if (!data.collectionByHandle) {
       throw new Error(`Collection handle not found in source store: ${handle}`)
     }
+    fetched += data.collectionByHandle.products.edges.length
     return data.collectionByHandle.products
   }, limit)
 
@@ -143,7 +168,7 @@ async function exportByCollection(
 async function exportByProductQuery(
   client: ReturnType<typeof createShopifyAdminClient>,
   productQuery: string,
-  limit: number
+  limit: number | undefined
 ): Promise<SourceProduct[]> {
   const query = `#graphql
     ${PRODUCT_FIELDS}
@@ -155,12 +180,14 @@ async function exportByProductQuery(
     }
   `
 
+  let fetched = 0
   const nodes = await collectPaginated<ShopifyProductNode>(async (after) => {
     const data = await client.graphql<ProductsResponse>(query, {
       query: productQuery,
-      first: Math.min(50, limit),
+      first: pageSizeFor(limit, fetched),
       after
     })
+    fetched += data.products.edges.length
     return data.products
   }, limit)
 
