@@ -1,0 +1,23 @@
+{
+  "name": "babymood-shopify-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx scripts/products/export-source-products.ts --help",
+    "typecheck": "tsc --noEmit",
+    "export:source": "tsx scripts/products/export-source-products.ts",
+    "transform:products": "tsx scripts/products/transform-products-for-babymood.ts",
+    "import:products:dry": "tsx scripts/products/import-products-to-babymood.ts",
+    "import:products:apply": "tsx scripts/products/import-products-to-babymood.ts --apply",
+    "metafields:create:dry": "tsx scripts/products/create-metafield-definitions.ts",
+    "metafields:create:apply": "tsx scripts/products/create-metafield-definitions.ts --apply",
+    "collections:assign": "tsx scripts/products/assign-collections.ts",
+    "theme:pull": "tsx scripts/theme/pull-theme.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
