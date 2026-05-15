@@ -1,0 +1,580 @@
+{% liquid
+  assign section_id = 'bm-home-montessori-story-' | append: section.id
+  assign image_position = section.settings.image_position | default: 'left'
+  assign image_alt = section.settings.image.alt | default: section.settings.heading | escape
+%}
+
+<section
+  id="{{ section_id }}"
+  class="bm-home-montessori-story bm-home-montessori-story--image-{{ image_position }} color-{{ section.settings.color_scheme }} gradient"
+>
+  <div class="bm-home-montessori-story__inner">
+    <div class="bm-home-montessori-story__media">
+      <div class="bm-home-montessori-story__frame">
+        {%- if section.settings.image != blank -%}
+          <img
+            class="bm-home-montessori-story__image"
+            src="{{ section.settings.image | image_url: width: 1400 }}"
+            srcset="
+              {{ section.settings.image | image_url: width: 600 }} 600w,
+              {{ section.settings.image | image_url: width: 900 }} 900w,
+              {{ section.settings.image | image_url: width: 1200 }} 1200w,
+              {{ section.settings.image | image_url: width: 1600 }} 1600w
+            "
+            sizes="(min-width: 990px) 50vw, 100vw"
+            alt="{{ image_alt }}"
+            loading="lazy"
+            width="{{ section.settings.image.width }}"
+            height="{{ section.settings.image.height }}"
+          >
+        {%- else -%}
+          <div class="bm-home-montessori-story__image bm-home-montessori-story__image--placeholder" aria-hidden="true"></div>
+        {%- endif -%}
+        <span class="bm-home-montessori-story__sticker" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="m12 3.4 2.6 5.3 5.9.9-4.3 4.2 1 5.9L12 16.9l-5.3 2.8 1-5.9L3.5 9.6l5.9-.9L12 3.4Z" />
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <div class="bm-home-montessori-story__content">
+      {% if section.settings.eyebrow != blank %}
+        <span class="bm-home-montessori-story__eyebrow">
+          <span class="bm-home-montessori-story__eyebrow-dot" aria-hidden="true"></span>
+          {{ section.settings.eyebrow }}
+        </span>
+      {% endif %}
+
+      {% if section.settings.heading != blank %}
+        <h2 class="bm-home-montessori-story__heading">{{ section.settings.heading }}</h2>
+      {% endif %}
+
+      {% if section.settings.subheading != blank %}
+        <p class="bm-home-montessori-story__subheading">{{ section.settings.subheading }}</p>
+      {% endif %}
+
+      {% if section.blocks.size > 0 %}
+        <ul class="bm-home-montessori-story__benefits" role="list">
+          {% for block in section.blocks %}
+            <li class="bm-home-montessori-story__benefit" {{ block.shopify_attributes }}>
+              <span class="bm-home-montessori-story__benefit-icon" aria-hidden="true">
+                {% case block.settings.icon %}
+                  {% when 'moon' %}
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="M20.5 14.3a8.5 8.5 0 1 1-10.8-10.8 7 7 0 0 0 10.8 10.8Z" />
+                    </svg>
+                  {% when 'shield' %}
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="M12 2.8 20 6v5.6c0 5-3.3 8.5-8 9.8-4.7-1.3-8-4.8-8-9.8V6l8-3.2Zm0 2.6L6.4 7.6v4c0 3.6 2.2 6.1 5.6 7.2 3.4-1.1 5.6-3.6 5.6-7.2v-4L12 5.4Zm3.9 5.2-4.8 4.8-2.8-2.8 1.6-1.6 1.2 1.2 3.2-3.2 1.6 1.6Z" />
+                    </svg>
+                  {% when 'home' %}
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="M12 3.2 21 11l-1.5 1.7-1.5-1.3V20H6V11.4l-1.5 1.3L3 11l9-7.8Zm0 2.6L8 9.2V18h2.5v-4.4h3V18H16V9.2l-4-3.4Z" />
+                    </svg>
+                  {% when 'heart' %}
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="M12 20.5 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9a4.6 4.6 0 0 1 6.5 6.5L12 20.5Zm0-2.7 5.8-5.8a2.7 2.7 0 0 0-3.8-3.8L12 10.2l-2-2a2.7 2.7 0 0 0-3.8 3.8L12 17.8Z" />
+                    </svg>
+                  {% when 'star' %}
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="m12 3.4 2.6 5.3 5.9.9-4.3 4.2 1 5.9L12 16.9l-5.3 2.8 1-5.9L3.5 9.6l5.9-.9L12 3.4Z" />
+                    </svg>
+                  {% else %}
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="M12 3.2a3.3 3.3 0 1 1 0 6.6 3.3 3.3 0 0 1 0-6.6Zm0 7.6c3.8 0 6.4 2 6.4 5v3.4H5.6v-3.4c0-3 2.6-5 6.4-5Zm0 1.9c-2.7 0-4.5 1.3-4.5 3.1v1.5h9v-1.5c0-1.8-1.8-3.1-4.5-3.1Z" />
+                    </svg>
+                {% endcase %}
+              </span>
+              <div class="bm-home-montessori-story__benefit-content">
+                {% if block.settings.heading != blank %}
+                  <h3 class="bm-home-montessori-story__benefit-heading">{{ block.settings.heading }}</h3>
+                {% endif %}
+                {% if block.settings.text != blank %}
+                  <p class="bm-home-montessori-story__benefit-text">{{ block.settings.text }}</p>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if section.settings.button_label != blank %}
+        <div class="bm-home-montessori-story__actions">
+          <a
+            class="bm-home-montessori-story__button"
+            href="{{ section.settings.button_link | default: '#' }}"
+          >
+            {{ section.settings.button_label }}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% style %}
+  #{{ section_id }} {
+    --bm-story-ink: #2a2520;
+    --bm-story-muted: rgba(42, 37, 32, 0.72);
+    --bm-story-yellow: #ffd801;
+    --bm-story-yellow-deep: #f3c800;
+    --bm-story-cream: #fffdf6;
+    --bm-story-cream-warm: #fff4dc;
+    --bm-story-border: #efe6c8;
+    --bm-story-border-soft: rgba(239, 230, 200, 0.7);
+    --bm-story-radius: 26px;
+    padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+    padding-inline: clamp(12px, 4vw, 28px);
+    color: var(--bm-story-ink);
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(1rem, 3vw, 2rem);
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 2rem);
+    border-radius: var(--bm-story-radius);
+    border: 1px solid var(--bm-story-border-soft);
+    background:
+      radial-gradient(70% 50% at 0% 0%, rgba(255, 216, 1, 0.1), transparent 60%),
+      radial-gradient(60% 50% at 100% 100%, rgba(255, 244, 220, 0.7), transparent 65%),
+      linear-gradient(180deg, #fffdf6, var(--bm-story-cream));
+    overflow: hidden;
+  }
+
+  /* Decorative subtle dot accent — pure CSS */
+  #{{ section_id }} .bm-home-montessori-story__inner::before {
+    content: "";
+    position: absolute;
+    top: 1.1rem;
+    right: 1.3rem;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 999px;
+    background: var(--bm-story-yellow);
+    box-shadow: 0 0 0 5px rgba(255, 216, 1, 0.18);
+    pointer-events: none;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__media {
+    min-width: 0;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 22px;
+    border: 1px solid var(--bm-story-border);
+    background: var(--bm-story-cream-warm);
+    aspect-ratio: 4 / 5;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(1.05) contrast(1.02);
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__image--placeholder {
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255, 216, 1, 0.3), transparent 55%),
+      linear-gradient(140deg, var(--bm-story-cream-warm), #ffffff);
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__sticker {
+    position: absolute;
+    top: 0.9rem;
+    left: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffe14a 0%, var(--bm-story-yellow) 70%, var(--bm-story-yellow-deep) 100%);
+    color: var(--bm-story-ink);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.55) inset,
+      0 4px 12px rgba(255, 216, 1, 0.28);
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__sticker svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    fill: currentColor;
+    display: block;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    align-items: flex-start;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.32rem 0.7rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffffff, var(--bm-story-cream-warm));
+    border: 1px solid var(--bm-story-border);
+    color: var(--bm-story-ink);
+    font-size: 0.78rem;
+    line-height: 1.2;
+    font-weight: 680;
+    letter-spacing: 0.005em;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__eyebrow-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 999px;
+    background: var(--bm-story-yellow);
+    box-shadow: 0 0 0 3px rgba(255, 216, 1, 0.22);
+    flex: 0 0 auto;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__heading {
+    margin: 0;
+    font-size: clamp(1.6rem, 3.6vw, 2.1rem);
+    line-height: 1.14;
+    font-weight: 770;
+    letter-spacing: -0.01em;
+    color: var(--bm-story-ink);
+    text-wrap: balance;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__subheading {
+    margin: 0;
+    font-size: clamp(0.96rem, 2vw, 1.05rem);
+    line-height: 1.5;
+    color: var(--bm-story-muted);
+    max-width: 56ch;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__benefits {
+    list-style: none;
+    padding: 0;
+    margin: 0.4rem 0 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    width: 100%;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__benefit {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 0.75rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 16px;
+    border: 1px solid var(--bm-story-border-soft);
+    background: rgba(255, 255, 255, 0.7);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__benefit:hover {
+    transform: translateY(-1px);
+    border-color: #e6d9a6;
+    box-shadow: 0 4px 12px rgba(255, 216, 1, 0.1);
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__benefit-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffe14a 0%, var(--bm-story-yellow) 70%, var(--bm-story-yellow-deep) 100%);
+    color: var(--bm-story-ink);
+    flex: 0 0 auto;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.55) inset,
+      0 2px 6px rgba(255, 216, 1, 0.22);
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__benefit-icon svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    fill: currentColor;
+    display: block;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__benefit-content {
+    min-width: 0;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__benefit-heading {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    font-weight: 720;
+    color: var(--bm-story-ink);
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__benefit-text {
+    margin: 0.18rem 0 0;
+    font-size: 0.86rem;
+    line-height: 1.4;
+    color: var(--bm-story-muted);
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__actions {
+    margin-top: 0.3rem;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0.78rem 1.3rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffe14a 0%, var(--bm-story-yellow) 55%, var(--bm-story-yellow-deep) 100%);
+    color: var(--bm-story-ink);
+    font-size: 0.97rem;
+    font-weight: 750;
+    line-height: 1.1;
+    text-decoration: none;
+    border: 1px solid rgba(47, 42, 38, 0.06);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.55) inset,
+      0 2px 0 rgba(47, 42, 38, 0.06),
+      0 6px 16px rgba(255, 216, 1, 0.22);
+    transition: transform 0.18s ease, box-shadow 0.22s ease;
+  }
+
+  #{{ section_id }} .bm-home-montessori-story__button:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.6) inset,
+      0 3px 0 rgba(47, 42, 38, 0.07),
+      0 10px 22px rgba(255, 216, 1, 0.3);
+  }
+
+  @media screen and (min-width: 750px) {
+    #{{ section_id }} .bm-home-montessori-story__benefits {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    #{{ section_id }} .bm-home-montessori-story__inner {
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: clamp(1.5rem, 3vw, 2.4rem);
+      gap: clamp(1.5rem, 3.4vw, 2.6rem);
+    }
+
+    #{{ section_id }} .bm-home-montessori-story--image-right .bm-home-montessori-story__media {
+      order: 2;
+    }
+
+    #{{ section_id }} .bm-home-montessori-story--image-right .bm-home-montessori-story__content {
+      order: 1;
+    }
+
+    #{{ section_id }} .bm-home-montessori-story__frame {
+      aspect-ratio: 4 / 5;
+      max-height: 560px;
+    }
+
+    #{{ section_id }} .bm-home-montessori-story__content {
+      gap: 1rem;
+    }
+
+    #{{ section_id }} .bm-home-montessori-story__heading {
+      font-size: clamp(2rem, 2.6vw, 2.5rem);
+    }
+
+    #{{ section_id }} .bm-home-montessori-story__subheading {
+      font-size: 1.05rem;
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "BM Montessori story",
+  "tag": "section",
+  "class": "section section-bm-home-montessori-story",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Copy"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "За по-спокойна детска стая"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Защо Монтесори легло?"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Ниската височина дава на детето повече самостоятелност, прави вечерната рутина по-спокойна и се вписва уютно в практична детска стая."
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Разгледай Монтесори легла"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position (desktop)",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "blocks": [
+    {
+      "type": "benefit_item",
+      "name": "Benefit",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "child", "label": "Child" },
+            { "value": "moon", "label": "Moon (calm bedtime)" },
+            { "value": "shield", "label": "Shield (safety)" },
+            { "value": "home", "label": "Home (cozy room)" },
+            { "value": "heart", "label": "Heart" },
+            { "value": "star", "label": "Star (quality)" }
+          ],
+          "default": "child"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Повече самостоятелност"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "default": "Ниската височина помага на детето по-лесно да се качва и слиза само."
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "BM Montessori story",
+      "blocks": [
+        {
+          "type": "benefit_item",
+          "settings": {
+            "icon": "child",
+            "heading": "Повече самостоятелност",
+            "text": "Ниската височина помага на детето по-лесно да се качва и слиза само."
+          }
+        },
+        {
+          "type": "benefit_item",
+          "settings": {
+            "icon": "moon",
+            "heading": "По-спокойна вечерна рутина",
+            "text": "Леглото създава уютна и достъпна зона за сън и почивка."
+          }
+        },
+        {
+          "type": "benefit_item",
+          "settings": {
+            "icon": "home",
+            "heading": "Уютна детска среда",
+            "text": "Изчистеният дизайн се вписва лесно в топла и практична детска стая."
+          }
+        },
+        {
+          "type": "benefit_item",
+          "settings": {
+            "icon": "heart",
+            "heading": "Практичен избор за родители",
+            "text": "Подходящо решение за семейства, които търсят удобство и функционалност."
+          }
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": ["index"]
+  }
+}
+{% endschema %}

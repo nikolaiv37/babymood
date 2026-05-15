@@ -43,7 +43,7 @@
         "trust_item_6cXny7": {
           "type": "trust_item",
           "settings": {
-            "icon": "leaf",
+            "icon": "shield",
             "heading": "Подбрани решения за детска стая",
             "text": "Фокусираме се върху мебели, които са практични, уютни и лесни за съчетаване у дома."
           }
@@ -132,355 +132,60 @@
         "padding_bottom": 40
       }
     },
-    "collection_list_F8whjF": {
-      "type": "collection-list",
+    "bm_home_montessori_story_8cMkTG": {
+      "type": "bm-home-montessori-story",
       "blocks": {
-        "group_AAfiEP": {
-          "type": "group",
-          "name": "t:names.header",
+        "benefit_item_mR9NLN": {
+          "type": "benefit_item",
           "settings": {
-            "content_direction": "column",
-            "vertical_on_mobile": true,
-            "horizontal_alignment": "flex-start",
-            "vertical_alignment": "center",
-            "align_baseline": false,
-            "horizontal_alignment_flex_direction_column": "flex-start",
-            "vertical_alignment_flex_direction_column": "center",
-            "gap": 16,
-            "width": "fill",
-            "custom_width": 100,
-            "width_mobile": "fill",
-            "custom_width_mobile": 100,
-            "height": "fit",
-            "custom_height": 100,
-            "inherit_color_scheme": true,
-            "color_scheme": "",
-            "background_media": "none",
-            "video_position": "cover",
-            "background_image_position": "cover",
-            "border": "none",
-            "border_width": 1,
-            "border_opacity": 100,
-            "border_radius": 0,
-            "toggle_overlay": false,
-            "overlay_color": "#00000026",
-            "overlay_style": "solid",
-            "gradient_direction": "to top",
-            "link": "",
-            "open_in_new_tab": false,
-            "placeholder": "",
-            "padding-block-start": 0,
-            "padding-block-end": 0,
-            "padding-inline-start": 0,
-            "padding-inline-end": 0
-          },
-          "blocks": {
-            "text_LKPN8e": {
-              "type": "text",
-              "name": "t:names.text",
-              "settings": {
-                "text": "<h3>Разгледай категории</h3>",
-                "width": "fit-content",
-                "max_width": "normal",
-                "alignment": "left",
-                "type_preset": "rte",
-                "font": "var(--font-body--family)",
-                "font_size": "1rem",
-                "line_height": "normal",
-                "letter_spacing": "normal",
-                "case": "none",
-                "wrap": "pretty",
-                "color": "var(--color-foreground)",
-                "background": false,
-                "background_color": "#00000026",
-                "corner_radius": 0,
-                "padding-block-start": 0,
-                "padding-block-end": 16,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
-            }
-          },
-          "block_order": [
-            "text_LKPN8e"
-          ]
+            "icon": "child",
+            "heading": "Повече самостоятелност",
+            "text": "Ниската височина помага на детето по-лесно да се качва и слиза само."
+          }
         },
-        "static-collection-card": {
-          "type": "_collection-card",
-          "name": "t:names.collection_card",
-          "static": true,
+        "benefit_item_xVNVHN": {
+          "type": "benefit_item",
           "settings": {
-            "placement": "on_image",
-            "horizontal_alignment": "flex-start",
-            "vertical_alignment": "flex-end",
-            "collection_card_gap": 8,
-            "inherit_color_scheme": true,
-            "color_scheme": "",
-            "border": "none",
-            "border_width": 1,
-            "border_opacity": 100,
-            "border_radius": 0
-          },
-          "blocks": {
-            "collection_title_X6GKH3": {
-              "type": "collection-title",
-              "name": "t:names.collection_title",
-              "settings": {
-                "width": "fit-content",
-                "max_width": "normal",
-                "alignment": "left",
-                "type_preset": "rte",
-                "font": "var(--font-body--family)",
-                "font_size": "1rem",
-                "line_height": "normal",
-                "letter_spacing": "normal",
-                "case": "none",
-                "wrap": "pretty",
-                "color": "var(--color-foreground)",
-                "background": true,
-                "background_color": "#ffffff",
-                "corner_radius": 0,
-                "padding-block-start": 4,
-                "padding-block-end": 4,
-                "padding-inline-start": 8,
-                "padding-inline-end": 8
-              },
-              "blocks": {}
-            },
-            "collection-card-image": {
-              "type": "_collection-card-image",
-              "name": "t:names.collection_card_image",
-              "static": true,
-              "settings": {
-                "image_ratio": "adapt",
-                "toggle_overlay": false,
-                "overlay_color": "#00000026",
-                "overlay_style": "solid",
-                "gradient_direction": "to top",
-                "border": "none",
-                "border_width": 1,
-                "border_opacity": 100,
-                "border_radius": 0
-              },
-              "blocks": {}
-            }
-          },
-          "block_order": [
-            "collection_title_X6GKH3"
-          ]
+            "icon": "moon",
+            "heading": "По-спокойна вечерна рутина",
+            "text": "Леглото създава уютна и достъпна зона за сън и почивка."
+          }
+        },
+        "benefit_item_wWRWf6": {
+          "type": "benefit_item",
+          "settings": {
+            "icon": "home",
+            "heading": "Уютна детска среда",
+            "text": "Изчистеният дизайн се вписва лесно в топла и практична детска стая."
+          }
+        },
+        "benefit_item_pmTjJ4": {
+          "type": "benefit_item",
+          "settings": {
+            "icon": "heart",
+            "heading": "Практичен избор за родители",
+            "text": "Подходящо решение за семейства, които търсят удобство и функционалност."
+          }
         }
       },
       "block_order": [
-        "group_AAfiEP"
+        "benefit_item_mR9NLN",
+        "benefit_item_xVNVHN",
+        "benefit_item_wWRWf6",
+        "benefit_item_pmTjJ4"
       ],
-      "disabled": true,
-      "name": "t:names.collections_bento",
+      "name": "BM Montessori story",
       "settings": {
-        "collection_list": [
-          "детски-легла",
-          "монтесори-легла",
-          "допълващи-мебели",
-          "детски-лампи"
-        ],
-        "layout_type": "bento",
-        "carousel_on_mobile": true,
-        "columns": 4,
-        "mobile_columns": "2",
-        "mobile_card_size": "44cqw",
-        "columns_gap": 8,
-        "bento_gap": 8,
-        "rows_gap": 8,
-        "max_collections": 4,
-        "icons_style": "arrow",
-        "icons_shape": "circle",
-        "section_width": "page-width",
-        "gap": 12,
         "color_scheme": "",
-        "padding-block-start": 24,
-        "padding-block-end": 24
-      }
-    },
-    "media_with_content_GUaMGU": {
-      "type": "media-with-content",
-      "blocks": {
-        "media": {
-          "type": "_media-without-appearance",
-          "static": true,
-          "settings": {
-            "media_type": "image",
-            "image": "shopify://shop_images/krebati-paidiko-me-kagkelo-fb970601-tmon-4_6f2a254e-0c1c-4c14-945a-e56650b949d7.webp",
-            "link": "",
-            "video_loop": true,
-            "video_autoplay": false,
-            "image_position": "cover",
-            "video_position": "cover"
-          },
-          "blocks": {}
-        },
-        "content": {
-          "type": "_content-without-appearance",
-          "static": true,
-          "settings": {
-            "horizontal_alignment_flex_direction_column": "flex-start",
-            "vertical_alignment_flex_direction_column": "space-between",
-            "gap": 24
-          },
-          "blocks": {
-            "text_J3pfgA": {
-              "type": "text",
-              "name": "t:names.caption",
-              "settings": {
-                "text": "<p><strong>BESTSELLER</strong></p>",
-                "width": "fit-content",
-                "max_width": "normal",
-                "alignment": "left",
-                "type_preset": "h6",
-                "font": "var(--font-body--family)",
-                "font_size": "1rem",
-                "line_height": "normal",
-                "letter_spacing": "normal",
-                "case": "none",
-                "wrap": "pretty",
-                "color": "var(--color-foreground)",
-                "background": false,
-                "background_color": "#00000026",
-                "corner_radius": 0,
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
-            },
-            "group_FXGhDT": {
-              "type": "group",
-              "settings": {
-                "content_direction": "column",
-                "vertical_on_mobile": true,
-                "horizontal_alignment": "flex-start",
-                "vertical_alignment": "center",
-                "align_baseline": false,
-                "horizontal_alignment_flex_direction_column": "flex-start",
-                "vertical_alignment_flex_direction_column": "center",
-                "gap": 12,
-                "width": "fill",
-                "custom_width": 100,
-                "width_mobile": "fill",
-                "custom_width_mobile": 100,
-                "height": "fit",
-                "custom_height": 100,
-                "inherit_color_scheme": true,
-                "color_scheme": "",
-                "background_media": "none",
-                "video_position": "cover",
-                "background_image_position": "cover",
-                "border": "none",
-                "border_width": 1,
-                "border_opacity": 100,
-                "border_radius": 0,
-                "toggle_overlay": false,
-                "overlay_color": "#00000026",
-                "overlay_style": "solid",
-                "gradient_direction": "to top",
-                "link": "",
-                "open_in_new_tab": false,
-                "placeholder": "",
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {
-                "text_xnkDrD": {
-                  "type": "text",
-                  "name": "t:names.heading",
-                  "settings": {
-                    "text": "<h2><strong>Защо Монтесори легло ?</strong></h2>",
-                    "width": "fit-content",
-                    "max_width": "normal",
-                    "alignment": "left",
-                    "type_preset": "h2",
-                    "font": "var(--font-body--family)",
-                    "font_size": "1rem",
-                    "line_height": "normal",
-                    "letter_spacing": "normal",
-                    "case": "none",
-                    "wrap": "pretty",
-                    "color": "var(--color-foreground)",
-                    "background": false,
-                    "background_color": "#00000026",
-                    "corner_radius": 0,
-                    "padding-block-start": 0,
-                    "padding-block-end": 30,
-                    "padding-inline-start": 0,
-                    "padding-inline-end": 0
-                  },
-                  "blocks": {}
-                },
-                "text_FJGQVB": {
-                  "type": "text",
-                  "settings": {
-                    "text": "<ul><li><strong>Детето</strong> влиза и излиза само<br/></li><li><strong>По-спокойна</strong> вечерна рутина<br/></li><li><strong>По-нисък</strong> профил и усещане за безопасност<br/></li><li><strong>Подходящо</strong> за модерна детска стая<br/></li><li><strong>Практичен избор за родители</strong>, които искат самостоятелност</li></ul>",
-                    "width": "fit-content",
-                    "max_width": "narrow",
-                    "alignment": "left",
-                    "type_preset": "rte",
-                    "font": "var(--font-body--family)",
-                    "font_size": "1rem",
-                    "line_height": "normal",
-                    "letter_spacing": "normal",
-                    "case": "none",
-                    "wrap": "pretty",
-                    "color": "var(--color-foreground)",
-                    "background": false,
-                    "background_color": "#00000026",
-                    "corner_radius": 0,
-                    "padding-block-start": 0,
-                    "padding-block-end": 0,
-                    "padding-inline-start": 0,
-                    "padding-inline-end": 0
-                  },
-                  "blocks": {}
-                }
-              },
-              "block_order": [
-                "text_xnkDrD",
-                "text_FJGQVB"
-              ]
-            },
-            "button_Ldmhin": {
-              "type": "button",
-              "settings": {
-                "label": "Научи повече",
-                "link": "shopify://collections/монтесори-легла",
-                "open_in_new_tab": false,
-                "style_class": "link",
-                "width": "fit-content",
-                "custom_width": 100,
-                "width_mobile": "fit-content",
-                "custom_width_mobile": 100
-              },
-              "blocks": {}
-            }
-          },
-          "block_order": [
-            "text_J3pfgA",
-            "group_FXGhDT",
-            "button_Ldmhin"
-          ]
-        }
-      },
-      "name": "t:names.editorial",
-      "settings": {
-        "media_position": "left",
-        "media_width": "medium",
-        "media_height": "60svh",
-        "section_width": "full-width",
-        "extend_media": true,
-        "color_scheme": "scheme-3",
-        "padding-block-start": 0,
-        "padding-block-end": 0
+        "eyebrow": "За по-спокойна детска стая",
+        "heading": "Защо Монтесори легло?",
+        "subheading": "Ниската височина дава на детето повече самостоятелност, прави вечерната рутина по-спокойна и се вписва уютно в практична детска стая.",
+        "button_label": "Разгледай Монтесори легла",
+        "button_link": "shopify://collections/монтесори-легла",
+        "image": "shopify://shop_images/paidikh-koyketa-me-grafeio-bibliothiki-f-4_f849fa1c-64c1-48b5-8b23-990914f85304.jpg",
+        "image_position": "left",
+        "padding_top": 32,
+        "padding_bottom": 40
       }
     },
     "product_list_8i9Rmi": {
@@ -1120,8 +825,7 @@
     "bm_home_hero_cUFUkR",
     "bm_home_trust_strip_jJy6tg",
     "bm_home_category_mosaic_FhzbGh",
-    "collection_list_F8whjF",
-    "media_with_content_GUaMGU",
+    "bm_home_montessori_story_8cMkTG",
     "product_list_8i9Rmi",
     "section_weRUp8",
     "section_pJJ3tt"
