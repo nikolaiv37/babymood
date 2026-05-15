@@ -255,7 +255,7 @@
               "type": "_product-list-button",
               "name": "t:names.product_list_button",
               "settings": {
-                "label": "View all",
+                "label": "Виж всички",
                 "open_in_new_tab": false,
                 "style_class": "link",
                 "width": "fit-content",
