@@ -1,7 +1,34 @@
-import { chunkArray, getBooleanArg, getNumberArg, getStringArg, latestJsonFile, parseArgs, readJsonFile } from '../utils/files.js'
-import { createLogger } from '../utils/logger.js'
+import { chunkArray, getBooleanArg, getNumberArg, getStringArg, latestJsonFile, parseArgs, readJsonFile, writeJsonFile } from '../utils/files.js'
+import { createLogger, timestampForFile } from '../utils/logger.js'
 import { createShopifyAdminClient } from '../utils/shopify-admin.js'
 import type { BabyMoodProduct, BabyMoodTransformFile } from './types.js'
+
+type ImportOperation = 'create' | 'update' | 'skip' | 'fail' | 'would-create' | 'would-update' | 'would-skip'
+
+interface ImportSummaryItem {
+  handle: string
+  title: string
+  sku?: string
+  operation: ImportOperation
+  templateSuffix?: string
+  productId?: string
+  reason?: string
+  error?: string
+}
+
+interface ImportSummary {
+  processed: number
+  created: ImportSummaryItem[]
+  updated: ImportSummaryItem[]
+  skipped: ImportSummaryItem[]
+  failed: ImportSummaryItem[]
+  sourceFile: string
+  apply: boolean
+  allowUpdate: boolean
+  startedAt: string
+  finishedAt: string
+  durationMs: number
+}
 
 interface ProductLookupResponse {
   products: {
@@ -62,81 +89,225 @@ async function main() {
 
   const client = createShopifyAdminClient('babymood', logger)
 
-  if (!apply) {
-    for (const product of products) {
+  const startedAt = new Date()
+  const created: ImportSummaryItem[] = []
+  const updated: ImportSummaryItem[] = []
+  const skipped: ImportSummaryItem[] = []
+  const failed: ImportSummaryItem[] = []
+  const total = products.length
+
+  const writeSummary = () => {
+    const finishedAt = new Date()
+    const summary: ImportSummary = {
+      processed: created.length + updated.length + skipped.length + failed.length,
+      created,
+      updated,
+      skipped,
+      failed,
+      sourceFile,
+      apply,
+      allowUpdate,
+      startedAt: startedAt.toISOString(),
+      finishedAt: finishedAt.toISOString(),
+      durationMs: finishedAt.getTime() - startedAt.getTime()
+    }
+    const summaryPath = writeJsonFile(`logs/import-summary-${timestampForFile(startedAt)}.json`, summary)
+    printSummary(summary, { total, summaryPath, logFile: logger.filePath })
+  }
+
+  try {
+    if (!apply) {
+      for (let index = 0; index < products.length; index += 1) {
+        const product = products[index]
+        const existing = await findExistingProduct(client, product)
+        if (existing && !allowUpdate) {
+          progressLine(index + 1, total, 'SKIP', product.handle)
+          logger.dryRun('Would skip existing product', {
+            ...summarizeProduct(product),
+            existingProductId: existing.id,
+            existingHandle: existing.handle,
+            reason: '--allow-update was not passed'
+          })
+          skipped.push(buildItem(product, 'would-skip', { reason: '--allow-update was not passed', productId: existing.id }))
+          continue
+        }
+
+        if (existing && allowUpdate) {
+          progressLine(index + 1, total, 'UPDATE', product.handle)
+          logger.dryRun('Would update existing product', {
+            ...summarizeProduct(product),
+            existingProductId: existing.id,
+            existingHandle: existing.handle
+          })
+          updated.push(buildItem(product, 'would-update', { productId: existing.id }))
+          continue
+        }
+
+        progressLine(index + 1, total, 'CREATE', product.handle)
+        logger.dryRun('Would create product', summarizeProduct(product))
+        created.push(buildItem(product, 'would-create'))
+      }
+      logger.success('Dry run finished. No Shopify writes were made.', { logFile: logger.filePath })
+      return
+    }
+
+    for (let index = 0; index < products.length; index += 1) {
+      const product = products[index]
       const existing = await findExistingProduct(client, product)
       if (existing && !allowUpdate) {
-        logger.dryRun('Would skip existing product', {
-          ...summarizeProduct(product),
-          existingProductId: existing.id,
-          existingHandle: existing.handle,
-          reason: '--allow-update was not passed'
+        progressLine(index + 1, total, 'SKIP', product.handle)
+        logger.warn('Existing product skipped because --allow-update was not passed', {
+          productId: existing.id,
+          handle: product.handle,
+          sku: firstSku(product)
         })
+        skipped.push(buildItem(product, 'skip', { reason: '--allow-update was not passed', productId: existing.id }))
         continue
       }
 
-      if (existing && allowUpdate) {
-        logger.dryRun('Would update existing product', {
-          ...summarizeProduct(product),
-          existingProductId: existing.id,
-          existingHandle: existing.handle
-        })
-        continue
-      }
+      progressLine(index + 1, total, existing ? 'UPDATE' : 'CREATE', product.handle)
 
-      logger.dryRun('Would create product', summarizeProduct(product))
-    }
-    logger.success('Dry run finished. No Shopify writes were made.', { logFile: logger.filePath })
-    return
-  }
+      try {
+        const productId = existing ? await updateProduct(client, product, existing.id) : await createProduct(client, product)
 
-  for (const product of products) {
-    const existing = await findExistingProduct(client, product)
-    if (existing && !allowUpdate) {
-      logger.warn('Existing product skipped because --allow-update was not passed', {
-        productId: existing.id,
-        handle: product.handle,
-        sku: firstSku(product)
-      })
-      continue
-    }
+        try {
+          await setProductMetafields(client, productId, product)
+          if (existing) {
+            logger.warn('Existing product media and variants were not changed automatically', {
+              productId,
+              handle: product.handle,
+              reason: 'Avoiding duplicate variants/media during update. Review manually or add a dedicated variant sync step.'
+            })
+          } else {
+            await createVariants(client, productId, product)
+          }
+        } catch (error) {
+          logger.error(existing ? 'Existing product update failed after core product update' : 'Partial product created before import step failed', {
+            productId,
+            handle: product.handle,
+            step: existing ? 'metafields' : 'metafields_or_variants',
+            error: error instanceof Error ? error.message : String(error),
+            rerunSafety: existing
+              ? 'Rerun requires --allow-update to continue updating this existing product.'
+              : 'Rerun will detect this product by handle/SKU and skip it unless --allow-update is passed.'
+          })
+          throw error
+        }
 
-    const productId = existing ? await updateProduct(client, product, existing.id) : await createProduct(client, product)
-
-    try {
-      await setProductMetafields(client, productId, product)
-      if (existing) {
-        logger.warn('Existing product media and variants were not changed automatically', {
+        logger.success(existing ? 'Product updated' : 'Product created', {
           productId,
           handle: product.handle,
-          reason: 'Avoiding duplicate variants/media during update. Review manually or add a dedicated variant sync step.'
+          imageCount: product.images.length,
+          variantCount: product.variants.length,
+          metafieldCount: product.metafields.length
         })
-      } else {
-        await createVariants(client, productId, product)
+        ;(existing ? updated : created).push(buildItem(product, existing ? 'update' : 'create', { productId }))
+      } catch (error) {
+        failed.push(buildItem(product, 'fail', {
+          productId: existing?.id,
+          error: error instanceof Error ? error.message : String(error)
+        }))
+        throw error
       }
-    } catch (error) {
-      logger.error(existing ? 'Existing product update failed after core product update' : 'Partial product created before import step failed', {
-        productId,
-        handle: product.handle,
-        step: existing ? 'metafields' : 'metafields_or_variants',
-        error: error instanceof Error ? error.message : String(error),
-        rerunSafety: existing
-          ? 'Rerun requires --allow-update to continue updating this existing product.'
-          : 'Rerun will detect this product by handle/SKU and skip it unless --allow-update is passed.'
-      })
-      throw error
     }
 
-    logger.success(existing ? 'Product updated' : 'Product created', {
-      productId,
-      handle: product.handle,
-      imageCount: product.images.length,
-      variantCount: product.variants.length,
-      metafieldCount: product.metafields.length
-    })
+    logger.success('Baby Mood import finished', { logFile: logger.filePath })
+  } finally {
+    writeSummary()
+  }
+}
+
+function progressLine(index: number, total: number, op: string, handle: string) {
+  console.log(`[${index}/${total}] ${op} ${handle}`)
+}
+
+function buildItem(
+  product: BabyMoodProduct,
+  operation: ImportOperation,
+  extra: Partial<ImportSummaryItem> = {}
+): ImportSummaryItem {
+  return {
+    handle: product.handle,
+    title: product.title,
+    sku: firstSku(product),
+    operation,
+    templateSuffix: product.templateSuffix,
+    ...extra
+  }
+}
+
+function printSummary(
+  summary: ImportSummary,
+  context: { total: number; summaryPath: string; logFile: string }
+) {
+  const lines: string[] = []
+  lines.push('')
+  lines.push('========================================')
+  lines.push('Baby Mood Import Summary')
+  lines.push('========================================')
+  lines.push('')
+  lines.push(`Source file:`)
+  lines.push(`  ${summary.sourceFile}`)
+  lines.push('')
+  lines.push(`Mode: ${summary.apply ? 'apply' : 'dry-run'}${summary.allowUpdate ? ' (allow-update)' : ''}`)
+  lines.push(`Processed: ${summary.processed} / ${context.total}`)
+  lines.push('')
+  lines.push(`Created: ${summary.created.length}`)
+  lines.push(`Updated: ${summary.updated.length}`)
+  lines.push(`Skipped: ${summary.skipped.length}`)
+  lines.push(`Failed:  ${summary.failed.length}`)
+  lines.push('')
+
+  const templateCounts = countByTemplateSuffix([...summary.created, ...summary.updated])
+  if (Object.keys(templateCounts).length > 0) {
+    lines.push('Template assigned:')
+    for (const [suffix, count] of Object.entries(templateCounts)) {
+      lines.push(`  ${suffix} → ${count}`)
+    }
+    lines.push('')
   }
 
-  logger.success('Baby Mood import finished', { logFile: logger.filePath })
+  appendSection(lines, 'Created products:', summary.created)
+  appendSection(lines, 'Updated products:', summary.updated)
+  appendSection(lines, 'Skipped:', summary.skipped)
+  appendSection(lines, 'Failed:', summary.failed, (item) => item.error)
+
+  lines.push(`Duration: ${(summary.durationMs / 1000).toFixed(1)}s`)
+  lines.push(`Log file:     ${context.logFile}`)
+  lines.push(`Summary file: ${context.summaryPath}`)
+  lines.push('========================================')
+  lines.push('')
+
+  console.log(lines.join('\n'))
+}
+
+function appendSection(
+  lines: string[],
+  heading: string,
+  items: ImportSummaryItem[],
+  extra?: (item: ImportSummaryItem) => string | undefined
+) {
+  lines.push(heading)
+  if (items.length === 0) {
+    lines.push('  (none)')
+  } else {
+    for (const item of items) {
+      const tail = extra?.(item)
+      const sku = item.sku ? ` [${item.sku}]` : ''
+      const suffix = tail ? ` — ${tail}` : ''
+      lines.push(`  * ${item.handle}${sku} | ${item.title}${suffix}`)
+    }
+  }
+  lines.push('')
+}
+
+function countByTemplateSuffix(items: ImportSummaryItem[]): Record<string, number> {
+  const counts: Record<string, number> = {}
+  for (const item of items) {
+    if (!item.templateSuffix) continue
+    counts[item.templateSuffix] = (counts[item.templateSuffix] ?? 0) + 1
+  }
+  return counts
 }
 
 async function findExistingProduct(
