@@ -60,15 +60,36 @@ async function main() {
     productCount: products.length
   })
 
+  const client = createShopifyAdminClient('babymood', logger)
+
   if (!apply) {
     for (const product of products) {
-      logger.dryRun('Would upsert product', summarizeProduct(product))
+      const existing = await findExistingProduct(client, product)
+      if (existing && !allowUpdate) {
+        logger.dryRun('Would skip existing product', {
+          ...summarizeProduct(product),
+          existingProductId: existing.id,
+          existingHandle: existing.handle,
+          reason: '--allow-update was not passed'
+        })
+        continue
+      }
+
+      if (existing && allowUpdate) {
+        logger.dryRun('Would update existing product', {
+          ...summarizeProduct(product),
+          existingProductId: existing.id,
+          existingHandle: existing.handle
+        })
+        continue
+      }
+
+      logger.dryRun('Would create product', summarizeProduct(product))
     }
     logger.success('Dry run finished. No Shopify writes were made.', { logFile: logger.filePath })
     return
   }
 
-  const client = createShopifyAdminClient('babymood', logger)
   for (const product of products) {
     const existing = await findExistingProduct(client, product)
     if (existing && !allowUpdate) {
@@ -82,15 +103,28 @@ async function main() {
 
     const productId = existing ? await updateProduct(client, product, existing.id) : await createProduct(client, product)
 
-    await setProductMetafields(client, productId, product)
-    if (existing) {
-      logger.warn('Existing product media and variants were not changed automatically', {
+    try {
+      await setProductMetafields(client, productId, product)
+      if (existing) {
+        logger.warn('Existing product media and variants were not changed automatically', {
+          productId,
+          handle: product.handle,
+          reason: 'Avoiding duplicate variants/media during update. Review manually or add a dedicated variant sync step.'
+        })
+      } else {
+        await createVariants(client, productId, product)
+      }
+    } catch (error) {
+      logger.error(existing ? 'Existing product update failed after core product update' : 'Partial product created before import step failed', {
         productId,
         handle: product.handle,
-        reason: 'Avoiding duplicate variants/media during update. Review manually or add a dedicated variant sync step.'
+        step: existing ? 'metafields' : 'metafields_or_variants',
+        error: error instanceof Error ? error.message : String(error),
+        rerunSafety: existing
+          ? 'Rerun requires --allow-update to continue updating this existing product.'
+          : 'Rerun will detect this product by handle/SKU and skip it unless --allow-update is passed.'
       })
-    } else {
-      await createVariants(client, productId, product)
+      throw error
     }
 
     logger.success(existing ? 'Product updated' : 'Product created', {
@@ -235,8 +269,7 @@ async function createVariants(
         },
         optionValues: normalizeVariantOptions(variant.selectedOptions),
         price: variant.price,
-        taxable: variant.taxable,
-        requiresShipping: variant.requiresShipping
+        taxable: variant.taxable
       }))
     })
     throwOnUserErrors('productVariantsBulkCreate', data.productVariantsBulkCreate.userErrors)

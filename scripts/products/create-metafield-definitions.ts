@@ -65,8 +65,7 @@ async function main() {
         key,
         name,
         type,
-        ownerType: 'PRODUCT',
-        visibleToStorefrontApi: true
+        ownerType: 'PRODUCT'
       }
     })
 

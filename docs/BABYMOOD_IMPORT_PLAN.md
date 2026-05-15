@@ -16,17 +16,41 @@ npm install
 cp .env.example .env
 ```
 
-3. Fill in the values:
+3. Fill in the store domains and one authentication option for each store.
+
+The tooling supports two Shopify Admin API auth modes. If an `*_SHOPIFY_ADMIN_TOKEN` value is present, it is used first. If the Admin token is empty, the script uses `*_SHOPIFY_CLIENT_ID` and `*_SHOPIFY_CLIENT_SECRET` to request a runtime Admin API access token from Shopify. Runtime tokens are cached in memory only for the current script run.
+
+Static token mode:
 
 ```bash
-SOURCE_SHOPIFY_STORE_DOMAIN=source-store.myshopify.com
+SOURCE_SHOPIFY_STORE_DOMAIN=mebel-center.myshopify.com
 SOURCE_SHOPIFY_ADMIN_TOKEN=shpat_...
 BABYMOOD_SHOPIFY_STORE_DOMAIN=babymood-bg.myshopify.com
 BABYMOOD_SHOPIFY_ADMIN_TOKEN=shpat_...
-API_VERSION=2026-01
+API_VERSION=2026-04
 ```
 
-Do not commit `.env`. It is ignored by git.
+Client credentials mode:
+
+```bash
+SOURCE_SHOPIFY_STORE_DOMAIN=mebel-center.myshopify.com
+SOURCE_SHOPIFY_ADMIN_TOKEN=
+SOURCE_SHOPIFY_CLIENT_ID=...
+SOURCE_SHOPIFY_CLIENT_SECRET=...
+BABYMOOD_SHOPIFY_STORE_DOMAIN=babymood-bg.myshopify.com
+BABYMOOD_SHOPIFY_ADMIN_TOKEN=
+BABYMOOD_SHOPIFY_CLIENT_ID=...
+BABYMOOD_SHOPIFY_CLIENT_SECRET=...
+API_VERSION=2026-04
+```
+
+`API_VERSION` is shared by both source and Baby Mood scripts. It is set to `2026-04` for Baby Mood compatibility. Do not commit `.env`; it is ignored by git.
+
+4. Test both store credentials with a read-only shop query:
+
+```bash
+npm run auth:test
+```
 
 ## Dry Export
 
@@ -95,7 +119,8 @@ npm run collections:assign -- --source-file=data/transformed/<full-file>.json --
 ## Safety Checklist Before Applying
 
 - `.env` points to the correct source store and Baby Mood store.
-- `API_VERSION` is set to `2026-01`.
+- `API_VERSION` is set to `2026-04`.
+- `npm run auth:test` succeeds for source and Baby Mood.
 - The transformed JSON contains only intended products.
 - Product titles and SEO fields are Bulgarian and appropriate for Baby Mood.
 - Images and variants are preserved.

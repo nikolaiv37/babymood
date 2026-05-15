@@ -74,7 +74,7 @@ function transformProduct(product: SourceProduct): BabyMoodProduct {
       compareAtPrice: variant.compareAtPrice,
       inventoryPolicy: 'DENY',
       taxable: variant.taxable,
-      requiresShipping: variant.requiresShipping,
+      requiresShipping: variant.inventoryItem?.requiresShipping ?? true,
       selectedOptions: variant.selectedOptions
     })),
     metafields: compactMetafields([
@@ -105,17 +105,103 @@ function transformProduct(product: SourceProduct): BabyMoodProduct {
 }
 
 function makeBulgarianTitle(product: SourceProduct): string {
-  const base = product.title
+  const normalized = product.title
     .replace(/\bMontessori\b/gi, 'Монтесори')
     .replace(/\bKids?\b/gi, 'Детско')
     .replace(/\bChildren'?s?\b/gi, 'Детско')
     .replace(/\bBed\b/gi, 'легло')
     .replace(/\bLamp\b/gi, 'лампа')
     .replace(/\s+/g, ' ')
+    .replace(/[.。]+$/g, '')
+    .trim()
+
+  if (isBedProduct(product)) {
+    return buildBedTitle(product, normalized)
+  }
+
+  const base = normalized
+    .replace(/\s+/g, ' ')
     .trim()
 
   if (/[а-яА-Я]/.test(base)) return base
   return `${normalizeProductType(product)} ${base}`.trim()
+}
+
+function buildBedTitle(product: SourceProduct, title: string): string {
+  const model = extractBedModel(title)
+  const material = extractPremiumMaterial(title) ?? inferMaterial(title)
+  const color = inferColor(title)
+  const size = normalizeMattressSize(title)
+  const prefix = isMontessoriBed(product, title) ? 'Монтесори легло' : inferBedTitlePrefix(title)
+  const titleStart = [prefix, model].filter(Boolean).join(' ')
+  const titleWithMaterial = material ? `${titleStart} от ${material.toLowerCase()}` : titleStart
+  const details = [color ? color.toLowerCase() : undefined, size].filter(Boolean)
+
+  return truncate([titleWithMaterial, ...details].join(', ').replace(/\s+/g, ' ').trim(), 105)
+}
+
+function isBedProduct(product: SourceProduct): boolean {
+  const haystack = `${product.title} ${product.productType} ${product.tags.join(' ')}`.toLowerCase()
+  return haystack.includes('легло') || haystack.includes('bed')
+}
+
+function isMontessoriBed(product: SourceProduct, title: string): boolean {
+  const haystack = [
+    title,
+    product.productType,
+    product.tags.join(' '),
+    product.collections.map((collection) => `${collection.handle} ${collection.title}`).join(' ')
+  ]
+    .join(' ')
+    .toLowerCase()
+
+  return (haystack.includes('монтесори') || haystack.includes('montessori')) && !haystack.includes('двуетаж')
+}
+
+function inferBedTitlePrefix(title: string): string {
+  const lower = title.toLowerCase()
+  if (lower.includes('двуетаж')) {
+    return lower.includes('метал') ? 'Двуетажно метално легло' : 'Двуетажно легло'
+  }
+  return 'Детско легло'
+}
+
+function extractBedModel(title: string): string | undefined {
+  const cleaned = title
+    .replace(/т\.?\s*Монтесори/giu, ' ')
+    .replace(/Монтесори/giu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  const match = cleaned.match(/(?:^|\s)(?:Детско\s+)?легло\s+(.+?)(?=\s+(?:т\.?|масивна|метално|метална|дървесина|в\s|за\s+матрак|-|\d{2,3}\s*x\s*\d{2,3}|$))/iu)
+  const model = match?.[1]
+    ?.replace(/\bот\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  return model && /^[А-ЯA-Z]/.test(model) && !inferColor(model) ? model : undefined
+}
+
+function extractPremiumMaterial(value: string): string | undefined {
+  const lower = value.toLowerCase()
+  if (lower.includes('масивна борова дървесина')) return 'масивна борова дървесина'
+  if (lower.includes('борова дървесина')) return 'борова дървесина'
+  if (lower.includes('масивно дърво')) return 'масивно дърво'
+  if (lower.includes('метално') || lower.includes('метална') || lower.includes('метал')) return 'метал'
+  return undefined
+}
+
+function normalizeMattressSize(value: string): string | undefined {
+  const match = value.match(/\b(\d{2,3})\s*x\s*(\d{2,3})\s*(?:cm|см)?\b/i)
+  if (!match) return undefined
+
+  const first = Number(match[1])
+  const second = Number(match[2])
+  if (!Number.isFinite(first) || !Number.isFinite(second)) return undefined
+
+  const width = Math.min(first, second)
+  const length = Math.max(first, second)
+  return `${width}x${length} см`
 }
 
 function cleanDescriptionHtml(product: SourceProduct, title: string): string {
@@ -155,7 +241,7 @@ function inferAge(product: SourceProduct): string {
 }
 
 function inferMattressSize(value: string): string | undefined {
-  return value.match(/\b\d{2,3}\s*x\s*\d{2,3}\b/i)?.[0]?.replace(/\s+/g, '')
+  return normalizeMattressSize(value)
 }
 
 function inferDimensions(value: string): string | undefined {
@@ -172,18 +258,17 @@ function inferMaterial(value: string): string | undefined {
 
 function inferColor(value: string): string | undefined {
   const lower = value.toLowerCase()
-  const colors: Array<[string, string]> = [
-    ['white', 'Бяло'],
-    ['бял', 'Бяло'],
-    ['pink', 'Розово'],
-    ['роз', 'Розово'],
-    ['grey', 'Сиво'],
-    ['gray', 'Сиво'],
-    ['сив', 'Сиво'],
-    ['natural', 'Натурално'],
-    ['натурал', 'Натурално']
+  const colors: Array<[RegExp, string]> = [
+    [/(^|[^a-zа-я])white($|[^a-zа-я])/u, 'Бяло'],
+    [/(^|[^a-zа-я])бял(?:о|а)?($|[^a-zа-я])/u, 'Бяло'],
+    [/(^|[^a-zа-я])pink($|[^a-zа-я])/u, 'Розово'],
+    [/(^|[^a-zа-я])розов(?:о|а)?($|[^a-zа-я])/u, 'Розово'],
+    [/(^|[^a-zа-я])natural($|[^a-zа-я])/u, 'Натурално'],
+    [/(^|[^a-zа-я])натурален($|[^a-zа-я])|(^|[^a-zа-я])натурално($|[^a-zа-я])/u, 'Натурално'],
+    [/(^|[^a-zа-я])grey($|[^a-zа-я])|(^|[^a-zа-я])gray($|[^a-zа-я])/u, 'Сиво'],
+    [/(^|[^a-zа-я])сив(?:о|а)?($|[^a-zа-я])/u, 'Сиво']
   ]
-  return colors.find(([term]) => lower.includes(term))?.[1]
+  return colors.find(([pattern]) => pattern.test(lower))?.[1]
 }
 
 function inferRoomStyle(product: SourceProduct): string {

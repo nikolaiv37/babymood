@@ -1,0 +1,261 @@
+{% liquid
+  assign section_id = 'bm-product-trust-bar-' | append: section.id
+%}
+
+<section
+  id="{{ section_id }}"
+  class="bm-product-trust-bar color-{{ section.settings.color_scheme }} gradient"
+>
+  <div class="bm-product-trust-bar__inner">
+    {% for block in section.blocks %}
+      <div class="bm-product-trust-bar__item" {{ block.shopify_attributes }}>
+        <div class="bm-product-trust-bar__icon" aria-hidden="true">
+          {% case block.settings.icon %}
+            {% when 'leaf' %}
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M20 4.5c-6.2.2-10.7 2-13.2 5.3-2 2.7-2.2 6.1-.7 8.6 2.8-5.2 7.1-8 12.4-8.9-5.1 1.9-8.7 5.1-10.8 9.7 2.7 1.5 6.4 1.1 9.1-1.4 3.2-3 4.1-8.1 3.2-13.3Z" />
+              </svg>
+            {% when 'chat' %}
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M6.8 18.2 4 20v-3.3A7.6 7.6 0 0 1 2 11.5C2 7.4 6 4 11 4s9 3.4 9 7.5S16 19 11 19c-1.5 0-3-.3-4.2-.8Zm.6-3.1.5.3c.9.5 2 .8 3.1.8 3.5 0 6.2-2.1 6.2-4.7S14.5 6.8 11 6.8s-6.2 2.1-6.2 4.7c0 1.3.6 2.5 1.8 3.4l.5.4v1l.3-.2Z" />
+              </svg>
+            {% when 'return' %}
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M12 4a8 8 0 1 1-7.2 11.5l2.4-1.1A5.4 5.4 0 1 0 7.4 9h2.1v2.6H3V5.1h2.6v2A8 8 0 0 1 12 4Zm1.2 4v4.2l3.1 1.8-1.2 2-4.3-2.5V8h2.4Z" />
+              </svg>
+            {% when 'delivery' %}
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M3 5h11.7v3.1h2.7l3.6 4.2v5.2h-2.3a3 3 0 0 1-5.8 0H9.7a3 3 0 0 1-5.8 0H3V5Zm2.4 2.4V15h.2a3 3 0 0 1 4.1 0h4.9V7.4H5.4Zm11.7 3.1V15h1.5v-1.8l-2.3-2.7h.8ZM6.8 18.6a.9.9 0 1 0 0-1.8.9.9 0 0 0 0 1.8Zm9 0a.9.9 0 1 0 0-1.8.9.9 0 0 0 0 1.8Z" />
+              </svg>
+          {% endcase %}
+        </div>
+
+        <div class="bm-product-trust-bar__content">
+          {% if block.settings.heading != blank %}
+            <h3 class="bm-product-trust-bar__heading">{{ block.settings.heading }}</h3>
+          {% endif %}
+
+          {% if block.settings.text != blank %}
+            <p class="bm-product-trust-bar__text">{{ block.settings.text }}</p>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% style %}
+  #{{ section_id }} {
+    --bm-trust-border: color-mix(in srgb, currentColor 14%, transparent);
+    --bm-trust-icon-bg: color-mix(in srgb, currentColor 7%, transparent);
+    --bm-trust-gap: clamp(0.8rem, 2vw, 1rem);
+    padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+  }
+
+  #{{ section_id }} .bm-product-trust-bar__inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--bm-trust-gap);
+    width: 100%;
+  }
+
+  #{{ section_id }} .bm-product-trust-bar__item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 0.85rem;
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid var(--bm-trust-border);
+    border-radius: 16px;
+    background: color-mix(in srgb, rgb(var(--color-background)) 92%, currentColor 8%);
+  }
+
+  #{{ section_id }} .bm-product-trust-bar__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    background: var(--bm-trust-icon-bg);
+    color: rgb(var(--color-foreground));
+    flex: 0 0 auto;
+  }
+
+  #{{ section_id }} .bm-product-trust-bar__icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    display: block;
+    fill: currentColor;
+  }
+
+  #{{ section_id }} .bm-product-trust-bar__content {
+    min-width: 0;
+  }
+
+  #{{ section_id }} .bm-product-trust-bar__heading {
+    margin: 0;
+    color: rgb(var(--color-foreground));
+    font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+    line-height: 1.25;
+    font-weight: 650;
+    letter-spacing: 0;
+  }
+
+  #{{ section_id }} .bm-product-trust-bar__text {
+    margin: 0.25rem 0 0;
+    color: color-mix(in srgb, rgb(var(--color-foreground)) 76%, transparent);
+    font-size: 0.9rem;
+    line-height: 1.42;
+    letter-spacing: 0;
+  }
+
+  @media screen and (min-width: 750px) {
+    #{{ section_id }} .bm-product-trust-bar__inner {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #{{ section_id }} .bm-product-trust-bar__item {
+      padding: 1.05rem;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    #{{ section_id }} .bm-product-trust-bar__inner {
+      grid-template-columns: repeat({{ section.settings.columns_desktop }}, minmax(0, 1fr));
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Baby Mood trust bar",
+  "tag": "section",
+  "class": "section section-bm-product-trust-bar",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trust_item",
+      "name": "Trust item",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "leaf",
+              "label": "Leaf"
+            },
+            {
+              "value": "chat",
+              "label": "Consultation"
+            },
+            {
+              "value": "return",
+              "label": "Return"
+            },
+            {
+              "value": "delivery",
+              "label": "Delivery"
+            }
+          ],
+          "default": "leaf"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Безопасни материали"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Подбрани продукти за детска стая"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Baby Mood trust bar",
+      "blocks": [
+        {
+          "type": "trust_item",
+          "settings": {
+            "icon": "leaf",
+            "heading": "Безопасни материали",
+            "text": "Подбрани продукти за детска стая"
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "icon": "chat",
+            "heading": "Консултация преди поръчка",
+            "text": "Помагаме ви да изберете правилния модел"
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "icon": "return",
+            "heading": "14 дни право на връщане",
+            "text": "Спокойна покупка за вашето семейство"
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "icon": "delivery",
+            "heading": "Доставка с Еконт",
+            "text": "Удобна доставка до офис или адрес"
+          }
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}

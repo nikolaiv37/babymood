@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx scripts/products/export-source-products.ts --help",
     "typecheck": "tsc --noEmit",
+    "auth:test": "tsx scripts/auth-test.ts",
     "export:source": "tsx scripts/products/export-source-products.ts",
     "transform:products": "tsx scripts/products/transform-products-for-babymood.ts",
     "import:products:dry": "tsx scripts/products/import-products-to-babymood.ts",

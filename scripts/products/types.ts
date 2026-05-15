@@ -9,9 +9,24 @@ export interface SourceProduct {
   status: string
   seo?: { title?: string | null; description?: string | null } | null
   images: { id: string; url: string; altText?: string | null }[]
+  media: SourceMedia[]
+  collections: SourceCollection[]
   options: { id: string; name: string; values: string[] }[]
   variants: SourceVariant[]
   metafields: SourceMetafield[]
+}
+
+export interface SourceMedia {
+  id: string
+  alt?: string | null
+  mediaContentType: string
+  preview?: { image?: { url: string; altText?: string | null } | null } | null
+}
+
+export interface SourceCollection {
+  id: string
+  handle: string
+  title: string
 }
 
 export interface SourceVariant {
@@ -22,8 +37,14 @@ export interface SourceVariant {
   price: string
   compareAtPrice?: string | null
   inventoryPolicy: 'DENY' | 'CONTINUE'
+  inventoryQuantity?: number | null
+  inventoryItem?: {
+    id: string
+    sku?: string | null
+    tracked: boolean
+    requiresShipping: boolean
+  } | null
   taxable: boolean
-  requiresShipping: boolean
   selectedOptions: { name: string; value: string }[]
 }
 

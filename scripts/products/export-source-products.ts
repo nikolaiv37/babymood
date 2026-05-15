@@ -15,6 +15,17 @@ const PRODUCT_FIELDS = `#graphql
     status
     seo { title description }
     images(first: 50) { nodes { id url altText } }
+    media(first: 50) {
+      nodes {
+        id
+        alt
+        mediaContentType
+        preview { image { url altText } }
+      }
+    }
+    collections(first: 20) {
+      nodes { id handle title }
+    }
     options { id name values }
     variants(first: 100) {
       nodes {
@@ -25,8 +36,14 @@ const PRODUCT_FIELDS = `#graphql
         price
         compareAtPrice
         inventoryPolicy
+        inventoryQuantity
+        inventoryItem {
+          id
+          sku
+          tracked
+          requiresShipping
+        }
         taxable
-        requiresShipping
         selectedOptions { name value }
       }
     }
@@ -49,8 +66,10 @@ interface CollectionProductsResponse {
   }
 }
 
-type ShopifyProductNode = Omit<SourceProduct, 'images' | 'variants' | 'metafields'> & {
+type ShopifyProductNode = Omit<SourceProduct, 'images' | 'media' | 'collections' | 'variants' | 'metafields'> & {
   images: { nodes: SourceProduct['images'] }
+  media: { nodes: SourceProduct['media'] }
+  collections: { nodes: SourceProduct['collections'] }
   variants: { nodes: SourceProduct['variants'] }
   metafields: { nodes: SourceProduct['metafields'] }
 }
@@ -165,6 +184,8 @@ function normalizeProduct(product: ShopifyProductNode): SourceProduct {
   return {
     ...product,
     images: product.images.nodes,
+    media: product.media.nodes,
+    collections: product.collections.nodes,
     variants: product.variants.nodes,
     metafields: product.metafields.nodes
   }
