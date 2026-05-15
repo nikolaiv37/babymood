@@ -1,0 +1,320 @@
+{% liquid
+  assign section_id = 'bm-product-accordion-details-' | append: section.id
+%}
+
+<section
+  id="{{ section_id }}"
+  class="bm-product-accordion-details color-{{ section.settings.color_scheme }} gradient"
+>
+  <div class="bm-product-accordion-details__container">
+    <div class="bm-product-accordion-details__list">
+      <details
+        class="bm-product-accordion-details__item"
+        {% if section.settings.description_open %}
+          open
+        {% endif %}
+      >
+        <summary class="bm-product-accordion-details__summary">
+          <span class="bm-product-accordion-details__summary-text">
+            {{ section.settings.description_heading }}
+          </span>
+          <span class="bm-product-accordion-details__icon" aria-hidden="true"></span>
+        </summary>
+
+        <div class="bm-product-accordion-details__content rte">
+          {% if product.description != blank %}
+            {{ product.description }}
+          {% else %}
+            <p>{{ section.settings.empty_description_text }}</p>
+          {% endif %}
+        </div>
+      </details>
+
+      <details
+        class="bm-product-accordion-details__item"
+        {% if section.settings.delivery_open %}
+          open
+        {% endif %}
+      >
+        <summary class="bm-product-accordion-details__summary">
+          <span class="bm-product-accordion-details__summary-text">
+            {{ section.settings.delivery_heading }}
+          </span>
+          <span class="bm-product-accordion-details__icon" aria-hidden="true"></span>
+        </summary>
+
+        <div class="bm-product-accordion-details__content rte">
+          {{ section.settings.delivery_text }}
+        </div>
+      </details>
+
+      <details
+        class="bm-product-accordion-details__item"
+        {% if section.settings.return_open %}
+          open
+        {% endif %}
+      >
+        <summary class="bm-product-accordion-details__summary">
+          <span class="bm-product-accordion-details__summary-text">
+            {{ section.settings.return_heading }}
+          </span>
+          <span class="bm-product-accordion-details__icon" aria-hidden="true"></span>
+        </summary>
+
+        <div class="bm-product-accordion-details__content rte">
+          {{ section.settings.return_text }}
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+{% style %}
+  #{{ section_id }} {
+    --bm-accordion-ink: #2f2a26;
+    --bm-accordion-yellow: #ffd801;
+    --bm-accordion-border: #efe6c8;
+    --bm-accordion-surface: #fffdf5;
+    --bm-accordion-white: #ffffff;
+    --bm-accordion-muted: rgba(47, 42, 38, 0.74);
+    padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+    color: var(--bm-accordion-ink);
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__container {
+    border: 1px solid var(--bm-accordion-border);
+    border-radius: 26px;
+    background:
+      linear-gradient(180deg, rgba(255, 253, 245, 0.94), rgba(255, 255, 255, 0.98)),
+      var(--bm-accordion-surface);
+    overflow: hidden;
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__list {
+    display: grid;
+    gap: 0;
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__item {
+    border-bottom: 1px solid var(--bm-accordion-border);
+    background: rgba(255, 255, 255, 0.54);
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__item:last-child {
+    border-bottom: 0;
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__summary {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    min-height: 3.4rem;
+    padding: 0.95rem clamp(1rem, 3vw, 1.35rem);
+    color: var(--bm-accordion-ink);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__summary::before {
+    content: "";
+    width: 0.48rem;
+    height: 0.48rem;
+    border-radius: 999px;
+    background: var(--bm-accordion-yellow);
+    position: absolute;
+    left: clamp(1rem, 3vw, 1.35rem);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__summary-text {
+    padding-left: 1rem;
+    font-size: clamp(1rem, 1.8vw, 1.08rem);
+    line-height: 1.25;
+    font-weight: 750;
+    letter-spacing: 0;
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__icon {
+    position: relative;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1px solid rgba(239, 230, 200, 0.95);
+    border-radius: 999px;
+    background: var(--bm-accordion-white);
+    flex: 0 0 auto;
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__icon::before,
+  #{{ section_id }} .bm-product-accordion-details__icon::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.68rem;
+    height: 0.1rem;
+    border-radius: 999px;
+    background: var(--bm-accordion-ink);
+    transform: translate(-50%, -50%);
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__icon::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+    transition: opacity 0.18s ease;
+  }
+
+  #{{ section_id }} details[open] .bm-product-accordion-details__icon::after {
+    opacity: 0;
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__content {
+    padding: 0 clamp(1rem, 3vw, 1.35rem) 1.1rem;
+    color: var(--bm-accordion-muted);
+    font-size: 0.98rem;
+    line-height: 1.62;
+    letter-spacing: 0;
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__content > *:first-child {
+    margin-top: 0;
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__content > *:last-child {
+    margin-bottom: 0;
+  }
+
+  #{{ section_id }} .bm-product-accordion-details__content a {
+    color: var(--bm-accordion-ink);
+    text-underline-offset: 0.18em;
+  }
+
+  @media screen and (min-width: 750px) {
+    #{{ section_id }} .bm-product-accordion-details__summary {
+      min-height: 3.65rem;
+    }
+
+    #{{ section_id }} .bm-product-accordion-details__content {
+      padding-bottom: 1.25rem;
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "BM product accordions",
+  "tag": "section",
+  "class": "section section-bm-product-accordion-details",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Description accordion"
+    },
+    {
+      "type": "text",
+      "id": "description_heading",
+      "label": "Heading",
+      "default": "Описание на продукта"
+    },
+    {
+      "type": "checkbox",
+      "id": "description_open",
+      "label": "Open by default",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "empty_description_text",
+      "label": "Empty description text",
+      "default": "Описание за този продукт ще бъде добавено скоро."
+    },
+    {
+      "type": "header",
+      "content": "Delivery accordion"
+    },
+    {
+      "type": "text",
+      "id": "delivery_heading",
+      "label": "Heading",
+      "default": "Доставка и получаване"
+    },
+    {
+      "type": "richtext",
+      "id": "delivery_text",
+      "label": "Text",
+      "default": "<p>Доставката се уточнява според наличност, адрес и размер на продукта. За големи мебели може да се свържем с вас за потвърждение преди изпращане.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "delivery_open",
+      "label": "Open by default",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Return and consultation accordion"
+    },
+    {
+      "type": "text",
+      "id": "return_heading",
+      "label": "Heading",
+      "default": "Връщане и консултация"
+    },
+    {
+      "type": "richtext",
+      "id": "return_text",
+      "label": "Text",
+      "default": "<p>Имате 14 дни право на връщане според условията на магазина. При нужда от помощ с избора на размер или модел, можете да се свържете с нас преди поръчка.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "return_open",
+      "label": "Open by default",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    }
+  ],
+  "presets": [
+    {
+      "name": "BM product accordions"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}

@@ -36,12 +36,13 @@ async function main() {
 function transformProduct(product: SourceProduct): BabyMoodProduct {
   const title = makeBulgarianTitle(product)
   const descriptionText = stripHtml(product.descriptionHtml)
+  const fullText = `${product.title} ${descriptionText}`
   const collections = inferCollections(product)
   const tags = mapTags(product, collections)
-  const mattressSize = inferMattressSize(`${product.title} ${descriptionText}`)
-  const dimensions = inferDimensions(`${product.title} ${descriptionText}`)
-  const material = inferMaterial(descriptionText)
-  const color = inferColor(`${product.title} ${descriptionText}`)
+  const mattressSize = inferMattressSize(fullText)
+  const dimensions = inferDimensions(fullText)
+  const material = inferMaterial(fullText)
+  const color = inferColor(fullText)
 
   return {
     sourceProductId: product.id,
@@ -83,17 +84,13 @@ function transformProduct(product: SourceProduct): BabyMoodProduct {
       textMetafield('material', material),
       textMetafield('color', color),
       textMetafield('dimensions', dimensions),
-      longMetafield('whats_included', 'Продуктът включва описаните от производителя основни елементи. Матрак и декорация се добавят само ако са изрично посочени.'),
+      longMetafield('whats_included', inferWhatsIncluded(descriptionText)),
       longMetafield('parent_benefit', 'Създаден за по-спокойна детска стая, лесна ежедневна употреба и уютна среда за сън и игра.'),
       longMetafield('safety_note', 'Използвайте продукта според инструкциите на производителя и под надзор, съобразен с възрастта на детето.'),
       longMetafield('delivery_note', 'Доставката се уточнява според наличност, адрес и размер на продукта.'),
       longMetafield('care_instructions', 'Почиствайте с мека суха или леко влажна кърпа. Избягвайте агресивни препарати.'),
       textMetafield('room_style', inferRoomStyle(product)),
-      listMetafield('product_highlights', [
-        'Подходящо за детска стая',
-        'Практичен избор за ежедневна употреба',
-        'Запазени оригинални варианти и изображения'
-      ]),
+      listMetafield('product_highlights', inferProductHighlights(product, title)),
       textMetafield('faq_1_question', 'Подходящ ли е продуктът за малко дете?'),
       longMetafield('faq_1_answer', 'Проверете препоръчаната възраст, размерите и инструкциите за безопасност преди покупка.'),
       textMetafield('faq_2_question', 'Включен ли е матрак?'),
@@ -134,7 +131,8 @@ function buildBedTitle(product: SourceProduct, title: string): string {
   const size = normalizeMattressSize(title)
   const prefix = isMontessoriBed(product, title) ? 'Монтесори легло' : inferBedTitlePrefix(title)
   const titleStart = [prefix, model].filter(Boolean).join(' ')
-  const titleWithMaterial = material ? `${titleStart} от ${material.toLowerCase()}` : titleStart
+  const shouldShowMaterial = material ? !titleStart.toLowerCase().includes(material.toLowerCase()) : false
+  const titleWithMaterial = shouldShowMaterial && material ? `${titleStart} от ${material.toLowerCase()}` : titleStart
   const details = [color ? color.toLowerCase() : undefined, size].filter(Boolean)
 
   return truncate([titleWithMaterial, ...details].join(', ').replace(/\s+/g, ' ').trim(), 105)
@@ -205,10 +203,16 @@ function normalizeMattressSize(value: string): string | undefined {
 }
 
 function cleanDescriptionHtml(product: SourceProduct, title: string): string {
-  const text = stripHtml(product.descriptionHtml)
+  const text = normalizeDescriptionText(product.descriptionHtml)
   const intro = `<p><strong>${escapeHtml(title)}</strong> е подбран продукт за уютна и функционална детска стая от Baby Mood.</p>`
-  const source = text ? `<p>${escapeHtml(text)}</p>` : ''
-  return `${intro}${source}`.replace(/\s+/g, ' ').trim()
+  const source = text
+    .split(/\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`)
+    .join('')
+
+  return `${intro}${source}`.replace(/>\s+</g, '><').trim()
 }
 
 function inferCollections(product: SourceProduct): string[] {
@@ -237,7 +241,7 @@ function normalizeProductType(product: SourceProduct): string {
 function inferAge(product: SourceProduct): string {
   const haystack = `${product.title} ${product.descriptionHtml}`.toLowerCase()
   if (haystack.includes('baby') || haystack.includes('беб')) return 'За бебета и малки деца според указанията на производителя'
-  return 'За деца, съобразено с размерите и инструкциите за безопасност'
+  return 'Подходящо за деца, които вече спят самостоятелно, при употреба според инструкциите за безопасност'
 }
 
 function inferMattressSize(value: string): string | undefined {
@@ -245,14 +249,24 @@ function inferMattressSize(value: string): string | undefined {
 }
 
 function inferDimensions(value: string): string | undefined {
-  return value.match(/\b\d{2,3}\s*x\s*\d{2,3}(?:\s*x\s*\d{2,3})?\s*(?:cm|см)?\b/i)?.[0]
+  const dimensionMatch = value.match(/\b(\d{2,3}(?:[.,]\d+)?)\s*x\s*(\d{2,3}(?:[.,]\d+)?)(?:\s*x\s*(\d{2,3}(?:[.,]\d+)?))?\s*(?:h)?\s*(?:cm|см)?\b/i)
+  if (!dimensionMatch) return normalizeMattressSize(value)
+
+  const parts = [dimensionMatch[1], dimensionMatch[2], dimensionMatch[3]]
+    .filter((part): part is string => Boolean(part))
+    .map(formatDimensionNumber)
+
+  if (parts.length < 2) return undefined
+  if (parts.length === 2) return `${normalizeTwoPartSize(parts[0], parts[1])} см`
+  return `${parts.join('x')} см`
 }
 
 function inferMaterial(value: string): string | undefined {
   const lower = value.toLowerCase()
   if (lower.includes('mdf')) return 'MDF'
-  if (lower.includes('wood') || lower.includes('дърво') || lower.includes('масив')) return 'Дърво'
   if (lower.includes('metal') || lower.includes('метал')) return 'Метал'
+  if (lower.includes('pine') || lower.includes('бор') || lower.includes('борова дървесина')) return 'Масивна борова дървесина'
+  if (lower.includes('wood') || lower.includes('дърво') || lower.includes('масив')) return 'Дърво'
   return undefined
 }
 
@@ -275,6 +289,99 @@ function inferRoomStyle(product: SourceProduct): string {
   const haystack = `${product.title} ${product.tags.join(' ')}`.toLowerCase()
   if (haystack.includes('montessori') || haystack.includes('монтесори')) return 'Монтесори'
   return 'Уютна детска стая'
+}
+
+function inferProductHighlights(product: SourceProduct, title: string): string[] {
+  if (isMontessoriBed(product, title)) {
+    return [
+      'Нисък профил за повече самостоятелност',
+      'Подходящо за спокойна вечерна рутина',
+      'Изчистен дизайн за уютна детска стая'
+    ]
+  }
+
+  if (isBedProduct(product)) {
+    return [
+      'Практичен избор за детска стая',
+      'Удобен размер за ежедневна употреба',
+      'Топъл дизайн за уютно детско пространство'
+    ]
+  }
+
+  return [
+    'Подходящо за уютна детска стая',
+    'Практичен избор за ежедневна употреба',
+    'Лесно комбиниране с детско обзавеждане'
+  ]
+}
+
+function inferWhatsIncluded(descriptionText: string): string {
+  const lower = descriptionText.toLowerCase()
+  const mattressNotIncluded =
+    lower.includes('матраците се продават отделно') ||
+    lower.includes('матракът се продава отделно') ||
+    lower.includes('матрак не е включен') ||
+    lower.includes('матракът не е включен') ||
+    lower.includes('без матрак')
+
+  if (mattressNotIncluded) {
+    return 'Матракът не е включен в цената. Включени са основните елементи за сглобяване според описанието на производителя.'
+  }
+
+  return 'Включени са основните елементи за сглобяване според описанието на производителя. Матрак и декорация са включени само ако са изрично посочени.'
+}
+
+function normalizeDescriptionText(html: string): string {
+  return html
+    .replace(/\*{2,}/g, ' ')
+    .replace(/<\s*br\s*\/?>/gi, '\n')
+    .replace(/<\/(?:p|div|li|h[1-6])>/gi, '\n\n')
+    .replace(/<[^>]+>/g, ' ')
+    .split('\n')
+    .map((line) => line.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .map(cleanCatalogLabelLine)
+    .map(normalizeLooseSizes)
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+function cleanCatalogLabelLine(line: string): string {
+  const withoutMarkers = line.replace(/\*{2,}/g, '').trim()
+  const labelMatch = withoutMarkers.match(/^([А-ЯA-Z\s/.-]{3,}):$/u)
+  if (!labelMatch) return withoutMarkers
+
+  return titleCaseBulgarianLabel(labelMatch[1])
+}
+
+function titleCaseBulgarianLabel(value: string): string {
+  const lower = value.toLocaleLowerCase('bg-BG')
+  return lower.charAt(0).toLocaleUpperCase('bg-BG') + lower.slice(1)
+}
+
+function normalizeLooseSizes(value: string): string {
+  return value.replace(
+    /\b(\d{2,3}(?:[.,]\d+)?)\s*x\s*(\d{2,3}(?:[.,]\d+)?)(?![.,]\d)(?!\s*x)(?!\s*(?:cm|см))\b/gi,
+    (_match, first: string, second: string) => `${normalizeTwoPartSize(first, second)} см`
+  )
+}
+
+function formatDimensionNumber(value: string): string {
+  const normalized = value.replace(',', '.')
+  const number = Number(normalized)
+  if (!Number.isFinite(number)) return value
+  return Number.isInteger(number) ? String(number) : String(number).replace(/\.0+$/g, '')
+}
+
+function normalizeTwoPartSize(firstValue: string, secondValue: string): string {
+  const first = Number(firstValue)
+  const second = Number(secondValue)
+  if (!Number.isFinite(first) || !Number.isFinite(second)) return `${firstValue}x${secondValue}`
+
+  const width = Math.min(first, second)
+  const length = Math.max(first, second)
+  return `${formatDimensionNumber(String(width))}x${formatDimensionNumber(String(length))}`
 }
 
 function textMetafield(key: string, value?: string): BabyMoodMetafield | undefined {

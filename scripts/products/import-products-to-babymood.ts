@@ -170,7 +170,7 @@ async function createProduct(client: ReturnType<typeof createShopifyAdminClient>
     }
   `
   const data = await client.graphql<ProductCreateResponse>(mutation, {
-    product: productInput(product),
+    product: productCreateInput(product),
     media: product.images.map((image) => ({
       originalSource: image.url,
       alt: image.altText ?? product.title,
@@ -196,10 +196,7 @@ async function updateProduct(
     }
   `
   const data = await client.graphql<ProductUpdateResponse>(mutation, {
-    product: {
-      id,
-      ...productInput(product)
-    }
+    product: productUpdateInput(product, id)
   })
   throwOnUserErrors('productUpdate', data.productUpdate.userErrors)
   if (!data.productUpdate.product) throw new Error(`Product update returned no product for ${product.handle}`)
@@ -276,7 +273,7 @@ async function createVariants(
   }
 }
 
-function productInput(product: BabyMoodProduct) {
+function productCoreInput(product: BabyMoodProduct) {
   return {
     title: product.title,
     handle: product.handle,
@@ -285,8 +282,21 @@ function productInput(product: BabyMoodProduct) {
     productType: product.productType,
     tags: product.tags,
     status: product.status,
-    seo: product.seo,
+    seo: product.seo
+  }
+}
+
+function productCreateInput(product: BabyMoodProduct) {
+  return {
+    ...productCoreInput(product),
     productOptions: normalizeProductOptions(product)
+  }
+}
+
+function productUpdateInput(product: BabyMoodProduct, id: string) {
+  return {
+    id,
+    ...productCoreInput(product)
   }
 }
 
