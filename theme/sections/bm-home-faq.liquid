@@ -1,0 +1,455 @@
+{% liquid
+  assign section_id = 'bm-home-faq-' | append: section.id
+%}
+
+<section
+  id="{{ section_id }}"
+  class="bm-home-faq color-{{ section.settings.color_scheme }} gradient"
+>
+  <div class="bm-home-faq__inner">
+    {% if section.settings.heading != blank or section.settings.subheading != blank %}
+      <div class="bm-home-faq__intro">
+        {% if section.settings.heading != blank %}
+          <h2 class="bm-home-faq__heading">{{ section.settings.heading }}</h2>
+        {% endif %}
+        {% if section.settings.subheading != blank %}
+          <p class="bm-home-faq__subheading">{{ section.settings.subheading }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if section.blocks.size > 0 %}
+      <ul class="bm-home-faq__list" role="list">
+        {% for block in section.blocks %}
+          {%- assign is_open = false -%}
+          {%- if section.settings.open_first and forloop.first -%}
+            {%- assign is_open = true -%}
+          {%- endif -%}
+
+          <li class="bm-home-faq__item" {{ block.shopify_attributes }}>
+            <details class="bm-home-faq__details"{% if is_open %} open{% endif %}>
+              <summary class="bm-home-faq__summary">
+                <span class="bm-home-faq__question">{{ block.settings.question }}</span>
+                <span class="bm-home-faq__indicator" aria-hidden="true">
+                  <span class="bm-home-faq__indicator-bar bm-home-faq__indicator-bar--h"></span>
+                  <span class="bm-home-faq__indicator-bar bm-home-faq__indicator-bar--v"></span>
+                </span>
+              </summary>
+              <div class="bm-home-faq__answer">
+                {{ block.settings.answer }}
+              </div>
+            </details>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if section.settings.footer_text != blank or section.settings.footer_button_label != blank %}
+      <div class="bm-home-faq__footer">
+        {% if section.settings.footer_text != blank %}
+          <p class="bm-home-faq__footer-text">{{ section.settings.footer_text }}</p>
+        {% endif %}
+        {% if section.settings.footer_button_label != blank %}
+          <a
+            class="bm-home-faq__footer-button"
+            href="{{ section.settings.footer_button_link | default: '#' }}"
+          >
+            {{ section.settings.footer_button_label }}
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% style %}
+  #{{ section_id }} {
+    --bm-faq-ink: #2a2520;
+    --bm-faq-muted: rgba(42, 37, 32, 0.72);
+    --bm-faq-yellow: #ffd801;
+    --bm-faq-yellow-deep: #f3c800;
+    --bm-faq-cream: #fffdf6;
+    --bm-faq-cream-warm: #fff4dc;
+    --bm-faq-border: #efe6c8;
+    --bm-faq-border-soft: rgba(239, 230, 200, 0.7);
+    --bm-faq-radius: 18px;
+    padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+    padding-inline: clamp(12px, 4vw, 28px);
+    color: var(--bm-faq-ink);
+  }
+
+  #{{ section_id }} .bm-home-faq__inner {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  #{{ section_id }} .bm-home-faq__intro {
+    text-align: center;
+    margin-bottom: clamp(1rem, 2.4vw, 1.6rem);
+  }
+
+  #{{ section_id }} .bm-home-faq__heading {
+    margin: 0;
+    font-size: clamp(1.55rem, 3.4vw, 2rem);
+    line-height: 1.15;
+    font-weight: 760;
+    letter-spacing: -0.008em;
+    color: var(--bm-faq-ink);
+    text-wrap: balance;
+  }
+
+  #{{ section_id }} .bm-home-faq__subheading {
+    margin: 0.4rem auto 0;
+    max-width: 56ch;
+    font-size: clamp(0.95rem, 1.8vw, 1.02rem);
+    line-height: 1.5;
+    color: var(--bm-faq-muted);
+  }
+
+  #{{ section_id }} .bm-home-faq__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  #{{ section_id }} .bm-home-faq__item {
+    min-width: 0;
+  }
+
+  #{{ section_id }} .bm-home-faq__details {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--bm-faq-radius);
+    border: 1px solid var(--bm-faq-border-soft);
+    background: linear-gradient(180deg, #ffffff, var(--bm-faq-cream));
+    transition: border-color 0.2s ease, box-shadow 0.22s ease;
+  }
+
+  #{{ section_id }} .bm-home-faq__details:hover {
+    border-color: #e6d9a6;
+  }
+
+  #{{ section_id }} .bm-home-faq__details[open] {
+    border-color: #e6d9a6;
+    box-shadow: 0 4px 14px rgba(255, 216, 1, 0.08);
+    background:
+      radial-gradient(80% 60% at 100% 0%, rgba(255, 216, 1, 0.08), transparent 60%),
+      linear-gradient(180deg, #ffffff, var(--bm-faq-cream));
+  }
+
+  #{{ section_id }} .bm-home-faq__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.95rem 1.05rem;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #{{ section_id }} .bm-home-faq__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  #{{ section_id }} .bm-home-faq__summary:focus-visible {
+    outline: 2px solid var(--bm-faq-yellow);
+    outline-offset: 2px;
+    border-radius: var(--bm-faq-radius);
+  }
+
+  #{{ section_id }} .bm-home-faq__question {
+    font-size: clamp(0.97rem, 1.6vw, 1.05rem);
+    line-height: 1.3;
+    font-weight: 720;
+    color: var(--bm-faq-ink);
+    letter-spacing: -0.003em;
+  }
+
+  #{{ section_id }} .bm-home-faq__indicator {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffffff, var(--bm-faq-cream-warm));
+    border: 1px solid var(--bm-faq-border);
+    color: var(--bm-faq-ink);
+    flex: 0 0 auto;
+    transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.22s ease;
+  }
+
+  #{{ section_id }} .bm-home-faq__indicator-bar {
+    position: absolute;
+    background: var(--bm-faq-ink);
+    border-radius: 2px;
+  }
+
+  #{{ section_id }} .bm-home-faq__indicator-bar--h {
+    width: 0.8rem;
+    height: 2px;
+  }
+
+  #{{ section_id }} .bm-home-faq__indicator-bar--v {
+    width: 2px;
+    height: 0.8rem;
+    transition: transform 0.22s ease, opacity 0.22s ease;
+  }
+
+  #{{ section_id }} .bm-home-faq__details[open] .bm-home-faq__indicator {
+    background: var(--bm-faq-yellow);
+    border-color: rgba(47, 42, 38, 0.08);
+  }
+
+  #{{ section_id }} .bm-home-faq__details[open] .bm-home-faq__indicator-bar--v {
+    transform: rotate(90deg);
+    opacity: 0;
+  }
+
+  #{{ section_id }} .bm-home-faq__answer {
+    padding: 0 1.05rem 1.05rem;
+    color: var(--bm-faq-muted);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  #{{ section_id }} .bm-home-faq__answer > * {
+    margin: 0;
+  }
+
+  #{{ section_id }} .bm-home-faq__answer > * + * {
+    margin-top: 0.55rem;
+  }
+
+  #{{ section_id }} .bm-home-faq__answer a {
+    color: var(--bm-faq-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--bm-faq-yellow);
+    text-underline-offset: 3px;
+  }
+
+  #{{ section_id }} .bm-home-faq__answer a:hover {
+    text-decoration-color: var(--bm-faq-yellow-deep);
+  }
+
+  #{{ section_id }} .bm-home-faq__footer {
+    margin-top: clamp(1rem, 2.4vw, 1.6rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    text-align: center;
+  }
+
+  #{{ section_id }} .bm-home-faq__footer-text {
+    margin: 0;
+    color: var(--bm-faq-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    max-width: 52ch;
+  }
+
+  #{{ section_id }} .bm-home-faq__footer-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0.7rem 1.2rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffe14a 0%, var(--bm-faq-yellow) 55%, var(--bm-faq-yellow-deep) 100%);
+    color: var(--bm-faq-ink);
+    font-size: 0.95rem;
+    font-weight: 740;
+    text-decoration: none;
+    border: 1px solid rgba(47, 42, 38, 0.06);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.55) inset,
+      0 2px 0 rgba(47, 42, 38, 0.06),
+      0 6px 16px rgba(255, 216, 1, 0.22);
+    transition: transform 0.18s ease, box-shadow 0.22s ease;
+  }
+
+  #{{ section_id }} .bm-home-faq__footer-button:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.6) inset,
+      0 3px 0 rgba(47, 42, 38, 0.07),
+      0 10px 22px rgba(255, 216, 1, 0.3);
+  }
+
+  @media screen and (min-width: 750px) {
+    #{{ section_id }} .bm-home-faq__list {
+      gap: 0.6rem;
+    }
+
+    #{{ section_id }} .bm-home-faq__summary {
+      padding: 1.05rem 1.2rem;
+    }
+
+    #{{ section_id }} .bm-home-faq__answer {
+      padding: 0 1.2rem 1.15rem;
+      font-size: 0.97rem;
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Baby Mood FAQ",
+  "tag": "section",
+  "class": "section section-bm-home-faq",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Copy"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Често задавани въпроси"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Кратки отговори за поръчка, доставка и избор на подходящ продукт."
+    },
+    {
+      "type": "checkbox",
+      "id": "open_first",
+      "label": "Open first item by default",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Footer (optional)"
+    },
+    {
+      "type": "text",
+      "id": "footer_text",
+      "label": "Footer text",
+      "info": "Optional. Leave blank to hide."
+    },
+    {
+      "type": "text",
+      "id": "footer_button_label",
+      "label": "Footer button label"
+    },
+    {
+      "type": "url",
+      "id": "footer_button_link",
+      "label": "Footer button link"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "blocks": [
+    {
+      "type": "faq_item",
+      "name": "FAQ item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "Въпрос"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Отговор</p>"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Baby Mood FAQ",
+      "blocks": [
+        {
+          "type": "faq_item",
+          "settings": {
+            "question": "За каква възраст са подходящи Монтесори леглата?",
+            "answer": "<p>Монтесори леглата са подходящи за деца, които вече спят самостоятелно и могат безопасно да се качват и слизат от леглото. Винаги съобразявайте избора с възрастта, височината на детето и инструкциите на производителя.</p>"
+          }
+        },
+        {
+          "type": "faq_item",
+          "settings": {
+            "question": "Идват ли с матрак?",
+            "answer": "<p>Матракът е включен само ако това е изрично посочено в описанието на продукта. При повечето модели матракът се избира и поръчва отделно според размера на леглото.</p>"
+          }
+        },
+        {
+          "type": "faq_item",
+          "settings": {
+            "question": "Как се извършва доставката?",
+            "answer": "<p>Доставката се извършва с Еконт до офис или адрес в България. Срокът и точната цена зависят от наличността, размера на продукта и избрания адрес.</p>"
+          }
+        },
+        {
+          "type": "faq_item",
+          "settings": {
+            "question": "Може ли консултация преди поръчка?",
+            "answer": "<p>Да. Ако не сте сигурни кой модел е подходящ, можете да се свържете с нас за помощ при избор според размер, възраст, място в стаята и нуждите на детето.</p>"
+          }
+        },
+        {
+          "type": "faq_item",
+          "settings": {
+            "question": "Какво става при повреда или дефект?",
+            "answer": "<p>При проблем с продукт или доставка се свържете с нас възможно най-скоро. Ще съдействаме за проверка на случая и подходящо решение според ситуацията.</p>"
+          }
+        },
+        {
+          "type": "faq_item",
+          "settings": {
+            "question": "Как се сглобяват продуктите?",
+            "answer": "<p>Повечето мебели се доставят разглобени в заводска опаковка. Следвайте инструкциите за монтаж от производителя и при нужда използвайте помощ от втори човек.</p>"
+          }
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": ["index"]
+  }
+}
+{% endschema %}
