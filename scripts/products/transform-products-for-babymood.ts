@@ -43,6 +43,7 @@ function transformProduct(product: SourceProduct): BabyMoodProduct {
   const dimensions = inferDimensions(fullText)
   const material = inferMaterial(fullText)
   const color = inferColor(fullText)
+  const isMontessori = isMontessoriBed(product, title)
 
   return {
     sourceProductId: product.id,
@@ -52,7 +53,8 @@ function transformProduct(product: SourceProduct): BabyMoodProduct {
     descriptionHtml: cleanDescriptionHtml(product, title),
     vendor: 'Baby Mood',
     productType: normalizeProductType(product),
-    status: 'DRAFT',
+    status: isMontessori ? 'ACTIVE' : 'DRAFT',
+    ...(isMontessori ? { templateSuffix: 'montesori-product-temp' } : {}),
     tags,
     seo: {
       title: truncate(`${title} | Baby Mood`, 70),

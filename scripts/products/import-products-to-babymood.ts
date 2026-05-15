@@ -282,7 +282,8 @@ function productCoreInput(product: BabyMoodProduct) {
     productType: product.productType,
     tags: product.tags,
     status: product.status,
-    seo: product.seo
+    seo: product.seo,
+    ...(product.templateSuffix ? { templateSuffix: product.templateSuffix } : {})
   }
 }
 
@@ -338,6 +339,8 @@ function summarizeProduct(product: BabyMoodProduct) {
     title: product.title,
     handle: product.handle,
     sku: firstSku(product),
+    status: product.status,
+    templateSuffix: product.templateSuffix,
     collections: product.collections,
     tags: product.tags,
     imageCount: product.images.length,

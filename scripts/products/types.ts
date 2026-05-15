@@ -75,6 +75,7 @@ export interface BabyMoodProduct {
   vendor: 'Baby Mood'
   productType: string
   status: 'DRAFT' | 'ACTIVE'
+  templateSuffix?: string
   tags: string[]
   seo: { title: string; description: string }
   collections: string[]
