@@ -71,6 +71,67 @@
         "padding_bottom": 32
       }
     },
+    "bm_home_category_mosaic_FhzbGh": {
+      "type": "bm-home-category-mosaic",
+      "blocks": {
+        "category_tile_pmBGL7": {
+          "type": "category_tile",
+          "settings": {
+            "title": "Монтесори легла",
+            "subtitle": "Ниски легла за повече самостоятелност и спокойна вечерна рутина.",
+            "image": "shopify://shop_images/paidikh-koyketa-tmontessori-fb971103-xyl_ad4b2b63-b033-4b36-80c3-313a83d1c648.jpg",
+            "link": "shopify://collections/монтесори-легла",
+            "size": "large"
+          }
+        },
+        "category_tile_KrrdRr": {
+          "type": "category_tile",
+          "settings": {
+            "title": "Детски легла",
+            "subtitle": "Практични модели за удобен сън и уютна детска стая.",
+            "image": "shopify://shop_images/krebati-paidiko-me-kagkelo-fb970601-tmon-6.jpg",
+            "link": "shopify://collections/монтесори-легла",
+            "size": "wide"
+          }
+        },
+        "category_tile_YBz6Qd": {
+          "type": "category_tile",
+          "settings": {
+            "title": "Допълващи мебели",
+            "subtitle": "Малки решения, които правят стаята по-подредена и удобна.",
+            "image": "shopify://shop_images/dopp.webp",
+            "link": "shopify://collections/допълващи-мебели",
+            "size": "small"
+          }
+        },
+        "category_tile_xfH4xp": {
+          "type": "category_tile",
+          "settings": {
+            "title": "Детски лампи",
+            "subtitle": "Меки акценти за по-топла и приятна атмосфера.",
+            "image": "shopify://shop_images/lamp.webp",
+            "link": "shopify://collections/детски-лампи",
+            "size": "small"
+          }
+        }
+      },
+      "block_order": [
+        "category_tile_pmBGL7",
+        "category_tile_KrrdRr",
+        "category_tile_YBz6Qd",
+        "category_tile_xfH4xp"
+      ],
+      "name": "Baby Mood category mosaic",
+      "settings": {
+        "color_scheme": "",
+        "heading": "Разгледай категории",
+        "subheading": "Подбрани продукти за уютна, практична и спокойна детска стая.",
+        "button_label": "Виж всички продукти",
+        "button_link": "",
+        "padding_top": 32,
+        "padding_bottom": 40
+      }
+    },
     "collection_list_F8whjF": {
       "type": "collection-list",
       "blocks": {
@@ -213,6 +274,7 @@
       "block_order": [
         "group_AAfiEP"
       ],
+      "disabled": true,
       "name": "t:names.collections_bento",
       "settings": {
         "collection_list": [
@@ -1057,6 +1119,7 @@
   "order": [
     "bm_home_hero_cUFUkR",
     "bm_home_trust_strip_jJy6tg",
+    "bm_home_category_mosaic_FhzbGh",
     "collection_list_F8whjF",
     "media_with_content_GUaMGU",
     "product_list_8i9Rmi",
