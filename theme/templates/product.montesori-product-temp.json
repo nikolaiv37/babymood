@@ -22,7 +22,7 @@
             "large_first_image": false,
             "icons_style": "none",
             "slideshow_controls_style": "thumbnails",
-            "slideshow_mobile_controls_style": "dots",
+            "slideshow_mobile_controls_style": "thumbnails",
             "thumbnail_position": "left",
             "thumbnail_width": 64,
             "thumbnail_radius": 0,
@@ -162,6 +162,15 @@
                 "price_tVjtKg"
               ]
             },
+            "bm_free_delivery_notice_HjD9Ur": {
+              "type": "bm-free-delivery-notice",
+              "name": "BM free delivery notice",
+              "settings": {
+                "title": "Безплатна доставка",
+                "text": "Безплатна доставка до офис на Еконт за всяка поръчка от Baby Mood."
+              },
+              "blocks": {}
+            },
             "divider_VJhene": {
               "type": "_divider",
               "name": "t:names.divider",
@@ -215,6 +224,7 @@
                 },
                 "accelerated-checkout": {
                   "type": "accelerated-checkout",
+                  "disabled": true,
                   "static": true,
                   "settings": {},
                   "blocks": {}
@@ -222,9 +232,25 @@
               },
               "block_order": []
             },
+            "bm_cta_reassurance_zANnqL": {
+              "type": "bm-cta-reassurance",
+              "name": "BM CTA reassurance",
+              "settings": {
+                "heading_1": "14 дни връщане",
+                "text_1": "Спокойна и лесна покупка",
+                "heading_2": "Без предплащане",
+                "text_2": "Плащане при получаване",
+                "heading_3": "Сигурна поръчка",
+                "text_3": "Проверка преди изпращане",
+                "heading_4": "Доставка с Еконт",
+                "text_4": "До офис или адрес в България"
+              },
+              "blocks": {}
+            },
             "text_aEtTtq": {
               "type": "text",
               "name": "Product description",
+              "disabled": true,
               "settings": {
                 "text": "{{ closest.product.description }}",
                 "width": "100%",
@@ -247,176 +273,16 @@
                 "padding-inline-end": 0
               },
               "blocks": {}
-            },
-            "group_qefH8M": {
-              "type": "group",
-              "name": "t:names.group",
-              "settings": {
-                "content_direction": "row",
-                "vertical_on_mobile": true,
-                "horizontal_alignment": "flex-start",
-                "vertical_alignment": "center",
-                "align_baseline": false,
-                "horizontal_alignment_flex_direction_column": "flex-start",
-                "vertical_alignment_flex_direction_column": "center",
-                "gap": 12,
-                "width": "fill",
-                "custom_width": 100,
-                "width_mobile": "fill",
-                "custom_width_mobile": 100,
-                "height": "fit",
-                "custom_height": 100,
-                "inherit_color_scheme": true,
-                "color_scheme": "",
-                "background_media": "none",
-                "video_position": "cover",
-                "background_image_position": "cover",
-                "border": "none",
-                "border_width": 1,
-                "border_opacity": 100,
-                "border_radius": 0,
-                "toggle_overlay": false,
-                "overlay_color": "#00000026",
-                "overlay_style": "solid",
-                "gradient_direction": "to top",
-                "link": "",
-                "open_in_new_tab": false,
-                "placeholder": "",
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {
-                "icon_6LaUWn": {
-                  "type": "icon",
-                  "name": "t:names.icon",
-                  "settings": {
-                    "icon": "star",
-                    "width": 24,
-                    "link": "",
-                    "open_in_new_tab": false
-                  },
-                  "blocks": {}
-                },
-                "text_abmbkR": {
-                  "type": "text",
-                  "name": "t:names.text",
-                  "settings": {
-                    "text": "<p>Безопасни материали</p>",
-                    "width": "fit-content",
-                    "max_width": "normal",
-                    "alignment": "left",
-                    "type_preset": "rte",
-                    "font": "var(--font-body--family)",
-                    "font_size": "1rem",
-                    "line_height": "normal",
-                    "letter_spacing": "normal",
-                    "case": "none",
-                    "wrap": "pretty",
-                    "color": "var(--color-foreground)",
-                    "background": false,
-                    "background_color": "#00000026",
-                    "corner_radius": 0,
-                    "padding-block-start": 0,
-                    "padding-block-end": 0,
-                    "padding-inline-start": 0,
-                    "padding-inline-end": 0
-                  },
-                  "blocks": {}
-                },
-                "icon_XftAfJ": {
-                  "type": "icon",
-                  "name": "t:names.icon",
-                  "settings": {
-                    "icon": "chat_bubble",
-                    "width": 24,
-                    "link": "",
-                    "open_in_new_tab": false
-                  },
-                  "blocks": {}
-                },
-                "text_PTtJ9q": {
-                  "type": "text",
-                  "name": "t:names.text",
-                  "settings": {
-                    "text": "<p>Консултация преди поръчка</p>",
-                    "width": "fit-content",
-                    "max_width": "normal",
-                    "alignment": "left",
-                    "type_preset": "rte",
-                    "font": "var(--font-body--family)",
-                    "font_size": "1rem",
-                    "line_height": "normal",
-                    "letter_spacing": "normal",
-                    "case": "none",
-                    "wrap": "pretty",
-                    "color": "var(--color-foreground)",
-                    "background": false,
-                    "background_color": "#00000026",
-                    "corner_radius": 0,
-                    "padding-block-start": 0,
-                    "padding-block-end": 0,
-                    "padding-inline-start": 0,
-                    "padding-inline-end": 0
-                  },
-                  "blocks": {}
-                },
-                "icon_j9fKeA": {
-                  "type": "icon",
-                  "name": "t:names.icon",
-                  "settings": {
-                    "icon": "return",
-                    "width": 24,
-                    "link": "",
-                    "open_in_new_tab": false
-                  },
-                  "blocks": {}
-                },
-                "text_WTa6kj": {
-                  "type": "text",
-                  "name": "t:names.text",
-                  "settings": {
-                    "text": "<p>14 дни право на връщане</p>",
-                    "width": "fit-content",
-                    "max_width": "normal",
-                    "alignment": "left",
-                    "type_preset": "rte",
-                    "font": "var(--font-body--family)",
-                    "font_size": "1rem",
-                    "line_height": "normal",
-                    "letter_spacing": "normal",
-                    "case": "none",
-                    "wrap": "pretty",
-                    "color": "var(--color-foreground)",
-                    "background": false,
-                    "background_color": "#00000026",
-                    "corner_radius": 0,
-                    "padding-block-start": 0,
-                    "padding-block-end": 0,
-                    "padding-inline-start": 0,
-                    "padding-inline-end": 0
-                  },
-                  "blocks": {}
-                }
-              },
-              "block_order": [
-                "icon_6LaUWn",
-                "text_abmbkR",
-                "icon_XftAfJ",
-                "text_PTtJ9q",
-                "icon_j9fKeA",
-                "text_WTa6kj"
-              ]
             }
           },
           "block_order": [
             "group_icgrde",
+            "bm_free_delivery_notice_HjD9Ur",
             "divider_VJhene",
             "variant_picker_R3rGDr",
             "buy_buttons_eYQEYi",
-            "text_aEtTtq",
-            "group_qefH8M"
+            "bm_cta_reassurance_zANnqL",
+            "text_aEtTtq"
           ]
         }
       },
@@ -430,6 +296,58 @@
         "color_scheme": "",
         "padding-block-start": 0,
         "padding-block-end": 0
+      }
+    },
+    "bm_product_cta_reassurance_yVfdXE": {
+      "type": "bm-product-cta-reassurance",
+      "blocks": {
+        "reassurance_PAJn6E": {
+          "type": "reassurance",
+          "settings": {
+            "icon": "return",
+            "heading": "14 дни връщане",
+            "text": "Спокойна и лесна покупка"
+          }
+        },
+        "reassurance_xezfXj": {
+          "type": "reassurance",
+          "settings": {
+            "icon": "payment",
+            "heading": "Без предплащане",
+            "text": "Плащане при получаване"
+          }
+        },
+        "reassurance_cWFR3p": {
+          "type": "reassurance",
+          "settings": {
+            "icon": "check",
+            "heading": "Сигурна поръчка",
+            "text": "Проверка преди изпращане"
+          }
+        },
+        "reassurance_jRHDfj": {
+          "type": "reassurance",
+          "disabled": true,
+          "settings": {
+            "icon": "delivery",
+            "heading": "Доставка с Еконт",
+            "text": "До офис или адрес в България"
+          }
+        }
+      },
+      "block_order": [
+        "reassurance_PAJn6E",
+        "reassurance_xezfXj",
+        "reassurance_cWFR3p",
+        "reassurance_jRHDfj"
+      ],
+      "disabled": true,
+      "name": "BM CTA reassurance",
+      "settings": {
+        "color_scheme": "",
+        "columns_desktop": 3,
+        "padding_top": 12,
+        "padding_bottom": 12
       }
     },
     "product_recommendations_qggXJq": {
@@ -572,10 +490,141 @@
         "padding-block-start": 48,
         "padding-block-end": 48
       }
+    },
+    "bm_montessori_benefits_tpqgAV": {
+      "type": "bm-montessori-benefits",
+      "blocks": {
+        "benefit_rtdWWm": {
+          "type": "benefit",
+          "settings": {
+            "text": "Детето може по-лесно да се качва и слиза само"
+          }
+        },
+        "benefit_MjMMDh": {
+          "type": "benefit",
+          "settings": {
+            "text": "Подкрепя усещането за самостоятелност"
+          }
+        },
+        "benefit_WNYhif": {
+          "type": "benefit",
+          "settings": {
+            "text": "Помага за по-спокойна вечерна рутина"
+          }
+        },
+        "benefit_67FAmL": {
+          "type": "benefit",
+          "settings": {
+            "text": "Създава уютна и достъпна детска среда"
+          }
+        }
+      },
+      "block_order": [
+        "benefit_rtdWWm",
+        "benefit_MjMMDh",
+        "benefit_WNYhif",
+        "benefit_67FAmL"
+      ],
+      "name": "BM Montessori benefits",
+      "settings": {
+        "color_scheme": "",
+        "heading": "Защо Монтесори легло?",
+        "subheading": "По-ниско легло, повече самостоятелност и по-спокойна детска стая.",
+        "text": "<p>Монтесори леглата са създадени около ежедневието на детето. Ниската височина прави стаята по-достъпна, а рутината около съня - по-спокойна за цялото семейство.</p>",
+        "image": "shopify://shop_images/krebati-fb967505-masif-xylo-peykoy-se-gk-3_9362a5a0-ab7f-46b0-bc12-9dcaae4e61a1.jpg",
+        "image_alt": "",
+        "padding_top": 28,
+        "padding_bottom": 28
+      }
+    },
+    "bm_product_trust_bar_LbJdjw": {
+      "type": "bm-product-trust-bar",
+      "blocks": {
+        "trust_item_nnxcWe": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "leaf",
+            "heading": "Безопасни материали",
+            "text": "Подбрани продукти за детска стая"
+          }
+        },
+        "trust_item_hqQ798": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "chat",
+            "heading": "Консултация преди поръчка",
+            "text": "Помагаме ви да изберете правилния модел"
+          }
+        },
+        "trust_item_nBcF4A": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "return",
+            "heading": "14 дни право на връщане",
+            "text": "Спокойна покупка за вашето семейство"
+          }
+        },
+        "trust_item_8M7Ly7": {
+          "type": "trust_item",
+          "disabled": true,
+          "settings": {
+            "icon": "delivery",
+            "heading": "Доставка с Еконт",
+            "text": "Удобна доставка до офис или адрес"
+          }
+        }
+      },
+      "block_order": [
+        "trust_item_nnxcWe",
+        "trust_item_hqQ798",
+        "trust_item_nBcF4A",
+        "trust_item_8M7Ly7"
+      ],
+      "name": "Baby Mood trust bar",
+      "settings": {
+        "color_scheme": "",
+        "columns_desktop": 3,
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    },
+    "bm_product_specs_nRpPhk": {
+      "type": "bm-product-specs",
+      "name": "Baby Mood product specs",
+      "settings": {
+        "color_scheme": "",
+        "heading": "Детайли за продукта",
+        "subheading": "Важна информация за размери, материали и употреба.",
+        "padding_top": 24,
+        "padding_bottom": 24
+      }
+    },
+    "bm_product_accordion_details_wRcLcj": {
+      "type": "bm-product-accordion-details",
+      "name": "BM product accordions",
+      "settings": {
+        "color_scheme": "",
+        "description_heading": "Описание на продукта",
+        "description_open": true,
+        "empty_description_text": "Описание за този продукт ще бъде добавено скоро.",
+        "delivery_heading": "Доставка и получаване",
+        "delivery_text": "<p>Доставката се уточнява според наличност, адрес и размер на продукта. За големи мебели може да се свържем с вас за потвърждение преди изпращане.</p>",
+        "delivery_open": false,
+        "return_heading": "Връщане и консултация",
+        "return_text": "<p>Имате 14 дни право на връщане според условията на магазина. При нужда от помощ с избора на размер или модел, можете да се свържете с нас преди поръчка.</p>",
+        "return_open": false,
+        "padding_top": 24,
+        "padding_bottom": 24
+      }
     }
   },
   "order": [
     "main",
+    "bm_product_cta_reassurance_yVfdXE",
+    "bm_product_trust_bar_LbJdjw",
+    "bm_product_specs_nRpPhk",
+    "bm_product_accordion_details_wRcLcj",
+    "bm_montessori_benefits_tpqgAV",
     "product_recommendations_qggXJq"
   ]
 }
