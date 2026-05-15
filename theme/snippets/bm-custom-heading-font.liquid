@@ -1,0 +1,185 @@
+{%- doc -%}
+  Baby Mood typography layer.
+
+  - Kurale (single-weight serif) for display/brand: headings, navigation, buttons,
+    product/collection card titles, Baby Mood custom section headings.
+  - Manrope (400/500/600/700) for readable text: body, paragraphs, descriptions,
+    prices, FAQ answers, helper text.
+
+  Both fonts include Bulgarian Cyrillic subsets on Google Fonts.
+
+  To revert: remove the {% render 'bm-custom-heading-font' %} call from
+  theme/layout/theme.liquid and delete this snippet file. No other files
+  reference Kurale or Manrope.
+{%- enddoc -%}
+
+{% # theme-check-disable RemoteAsset %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Kurale&family=Manrope:wght@400;500;600;700&display=swap"
+>
+{% # theme-check-enable RemoteAsset %}
+
+<style>
+  :root {
+    --bm-font-brand: "Kurale", "Cormorant Garamond", Georgia, serif;
+    --bm-font-readable: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  /* ============================================================
+     READABLE — Manrope
+     ============================================================ */
+  body {
+    font-family: var(--bm-font-readable);
+  }
+
+  p,
+  li,
+  dd,
+  dt,
+  blockquote,
+  figcaption,
+  address,
+  small,
+  label,
+  input,
+  textarea,
+  select {
+    font-family: var(--bm-font-readable);
+  }
+
+  /* Rich-text / descriptions */
+  .rte,
+  .rte *,
+  .product-description,
+  .product__description,
+  [class*="product-description"],
+  [class*="product__description"] {
+    font-family: var(--bm-font-readable);
+  }
+
+  /* Prices stay highly readable */
+  .price,
+  .price *,
+  .product-price,
+  .product-card__price,
+  .card__price,
+  .money,
+  [class*="__price"],
+  [class*="-price"] {
+    font-family: var(--bm-font-readable);
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  /* Cart / helper / form text */
+  .cart,
+  .cart *,
+  .cart-drawer,
+  .cart-drawer *,
+  .form__message,
+  .help-text {
+    font-family: var(--bm-font-readable);
+  }
+
+  /* Baby Mood readable text inside custom sections */
+  .bm-home-hero__subheading,
+  .bm-home-trust-strip__text,
+  .bm-home-category-mosaic__subheading,
+  .bm-home-category-mosaic__text,
+  .bm-home-montessori-story__subheading,
+  .bm-home-montessori-story__benefit-text,
+  .bm-home-faq__subheading,
+  .bm-home-faq__answer,
+  .bm-home-faq__answer *,
+  .bm-home-faq__footer-text,
+  .bm-product-trust-bar__text,
+  .bm-cta-reassurance__text,
+  .bm-free-delivery-notice__text {
+    font-family: var(--bm-font-readable);
+  }
+
+  /* ============================================================
+     BRAND — Kurale (single-weight serif; cap at 400 to avoid faux-bold)
+     ============================================================ */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--bm-font-brand);
+    font-weight: 400;
+    letter-spacing: 0.003em;
+  }
+
+  /* Navigation — slightly larger, tighter tracking; weight stays 400 because
+     Kurale ships single-weight on Google Fonts (any higher value would trigger
+     faux-bold synthesis). */
+  .header a,
+  .header__menu a,
+  .header__menu-link,
+  .header-menu a,
+  .header__inline-menu a,
+  nav a {
+    font-family: var(--bm-font-brand);
+    font-weight: 400;
+    font-size: 1.04rem;
+    letter-spacing: 0.002em;
+  }
+
+  /* Buttons */
+  .button,
+  .btn,
+  button.shopify-payment-button__button,
+  [class*="button-primary"],
+  [class*="button-secondary"] {
+    font-family: var(--bm-font-brand);
+    font-weight: 400;
+    letter-spacing: 0.012em;
+  }
+
+  /* Product / collection card titles */
+  .product-card__title,
+  .card__heading,
+  .card-title,
+  .card__title,
+  .collection-card__title,
+  .collection__title,
+  .product-title,
+  [class*="product-card__title"],
+  [class*="collection-card__title"] {
+    font-family: var(--bm-font-brand);
+    font-weight: 400;
+    letter-spacing: 0.005em;
+  }
+
+  /* Baby Mood custom-section display headings + brand pills/eyebrows + branded CTAs */
+  .bm-home-hero__heading,
+  .bm-home-hero__btn,
+  .bm-home-hero__chip,
+  .bm-home-trust-strip__title,
+  .bm-home-trust-strip__heading,
+  .bm-home-category-mosaic__heading,
+  .bm-home-category-mosaic__pill,
+  .bm-home-category-mosaic__button,
+  .bm-home-category-mosaic__cta-label,
+  .bm-home-montessori-story__heading,
+  .bm-home-montessori-story__eyebrow,
+  .bm-home-montessori-story__benefit-heading,
+  .bm-home-montessori-story__button,
+  .bm-home-faq__heading,
+  .bm-home-faq__question,
+  .bm-home-faq__footer-button,
+  .bm-product-trust-bar__heading,
+  .bm-montessori-benefits__heading,
+  .bm-product-accordion-details__heading,
+  .bm-product-specs__heading,
+  .bm-product-highlights__heading,
+  .bm-product-cta-reassurance__heading,
+  .bm-cta-reassurance__heading,
+  .bm-free-delivery-notice__title {
+    font-family: var(--bm-font-brand);
+    font-weight: 400;
+    letter-spacing: 0.005em;
+  }
+</style>
