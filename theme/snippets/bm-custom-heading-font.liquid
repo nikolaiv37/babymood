@@ -153,6 +153,20 @@
     letter-spacing: 0.005em;
   }
 
+  /* Announcement bar — Bulgarian Cyrillic glyphs need more vertical room than the
+     template's inline --line-height: 1 allows. Scoped to announcement-bar selectors only. */
+  .announcement-bar,
+  .announcement-bar__slide,
+  .announcement-bar__text,
+  .announcement-bar__link {
+    --line-height: 1.25;
+    line-height: 1.25;
+  }
+
+  .announcement-bar__text {
+    padding-block: 0.15rem;
+  }
+
   /* Baby Mood custom-section display headings + brand pills/eyebrows + branded CTAs */
   .bm-home-hero__heading,
   .bm-home-hero__btn,

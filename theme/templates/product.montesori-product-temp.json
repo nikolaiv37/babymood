@@ -240,10 +240,10 @@
                 "text_1": "Спокойна и лесна покупка",
                 "heading_2": "Без предплащане",
                 "text_2": "Плащане при получаване",
-                "heading_3": "Сигурна поръчка",
-                "text_3": "Проверка преди изпращане",
-                "heading_4": "Сигурна поръчка",
-                "text_4": "Потвърждение преди изпращане"
+                "heading_3": "Проверка преди изпращане",
+                "text_3": "Преглеждаме поръчката преди доставка",
+                "heading_4": "Потвърждение на поръчката",
+                "text_4": "Преди изпращане при нужда"
               },
               "blocks": {}
             },
@@ -348,6 +348,132 @@
         "columns_desktop": 3,
         "padding_top": 12,
         "padding_bottom": 12
+      }
+    },
+    "bm_product_trust_bar_LbJdjw": {
+      "type": "bm-product-trust-bar",
+      "blocks": {
+        "trust_item_nnxcWe": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "leaf",
+            "heading": "Безопасни материали",
+            "text": "Подбрани продукти за детска стая"
+          }
+        },
+        "trust_item_hqQ798": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "chat",
+            "heading": "Консултация преди поръчка",
+            "text": "Помагаме ви да изберете правилния модел"
+          }
+        },
+        "trust_item_nBcF4A": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "return",
+            "heading": "14 дни право на връщане",
+            "text": "Спокойна покупка за вашето семейство"
+          }
+        },
+        "trust_item_8M7Ly7": {
+          "type": "trust_item",
+          "disabled": true,
+          "settings": {
+            "icon": "delivery",
+            "heading": "Доставка с Еконт",
+            "text": "Удобна доставка до офис или адрес"
+          }
+        }
+      },
+      "block_order": [
+        "trust_item_nnxcWe",
+        "trust_item_hqQ798",
+        "trust_item_nBcF4A",
+        "trust_item_8M7Ly7"
+      ],
+      "name": "Baby Mood trust bar",
+      "settings": {
+        "color_scheme": "",
+        "columns_desktop": 3,
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    },
+    "bm_product_specs_nRpPhk": {
+      "type": "bm-product-specs",
+      "name": "Baby Mood product specs",
+      "settings": {
+        "color_scheme": "",
+        "heading": "Детайли за продукта",
+        "subheading": "Важна информация за размери, материали и употреба.",
+        "padding_top": 24,
+        "padding_bottom": 24
+      }
+    },
+    "bm_product_accordion_details_wRcLcj": {
+      "type": "bm-product-accordion-details",
+      "name": "BM product accordions",
+      "settings": {
+        "color_scheme": "",
+        "description_heading": "Описание на продукта",
+        "description_open": true,
+        "empty_description_text": "Описание за този продукт ще бъде добавено скоро.",
+        "delivery_heading": "Доставка и получаване",
+        "delivery_text": "<p>Доставката се уточнява според наличност, адрес и размер на продукта. За големи мебели може да се свържем с вас за потвърждение преди изпращане.</p>",
+        "delivery_open": false,
+        "return_heading": "Връщане и консултация",
+        "return_text": "<p>Имате 14 дни право на връщане според условията на магазина. При нужда от помощ с избора на размер или модел, можете да се свържете с нас преди поръчка.</p>",
+        "return_open": false,
+        "padding_top": 24,
+        "padding_bottom": 24
+      }
+    },
+    "bm_montessori_benefits_tpqgAV": {
+      "type": "bm-montessori-benefits",
+      "blocks": {
+        "benefit_rtdWWm": {
+          "type": "benefit",
+          "settings": {
+            "text": "Детето може по-лесно да се качва и слиза само"
+          }
+        },
+        "benefit_MjMMDh": {
+          "type": "benefit",
+          "settings": {
+            "text": "Подкрепя усещането за самостоятелност"
+          }
+        },
+        "benefit_WNYhif": {
+          "type": "benefit",
+          "settings": {
+            "text": "Помага за по-спокойна вечерна рутина"
+          }
+        },
+        "benefit_67FAmL": {
+          "type": "benefit",
+          "settings": {
+            "text": "Създава уютна и достъпна детска среда"
+          }
+        }
+      },
+      "block_order": [
+        "benefit_rtdWWm",
+        "benefit_MjMMDh",
+        "benefit_WNYhif",
+        "benefit_67FAmL"
+      ],
+      "name": "BM Montessori benefits",
+      "settings": {
+        "color_scheme": "",
+        "heading": "Защо Монтесори легло?",
+        "subheading": "По-ниско легло, повече самостоятелност и по-спокойна детска стая.",
+        "text": "<p>Монтесори леглата са създадени около ежедневието на детето. Ниската височина прави стаята по-достъпна, а рутината около съня - по-спокойна за цялото семейство.</p>",
+        "image": "shopify://shop_images/krebati-fb967505-masif-xylo-peykoy-se-gk-3_9362a5a0-ab7f-46b0-bc12-9dcaae4e61a1.jpg",
+        "image_alt": "",
+        "padding_top": 28,
+        "padding_bottom": 28
       }
     },
     "product_recommendations_qggXJq": {
@@ -489,132 +615,6 @@
         "color_scheme": "scheme-1",
         "padding-block-start": 48,
         "padding-block-end": 48
-      }
-    },
-    "bm_montessori_benefits_tpqgAV": {
-      "type": "bm-montessori-benefits",
-      "blocks": {
-        "benefit_rtdWWm": {
-          "type": "benefit",
-          "settings": {
-            "text": "Детето може по-лесно да се качва и слиза само"
-          }
-        },
-        "benefit_MjMMDh": {
-          "type": "benefit",
-          "settings": {
-            "text": "Подкрепя усещането за самостоятелност"
-          }
-        },
-        "benefit_WNYhif": {
-          "type": "benefit",
-          "settings": {
-            "text": "Помага за по-спокойна вечерна рутина"
-          }
-        },
-        "benefit_67FAmL": {
-          "type": "benefit",
-          "settings": {
-            "text": "Създава уютна и достъпна детска среда"
-          }
-        }
-      },
-      "block_order": [
-        "benefit_rtdWWm",
-        "benefit_MjMMDh",
-        "benefit_WNYhif",
-        "benefit_67FAmL"
-      ],
-      "name": "BM Montessori benefits",
-      "settings": {
-        "color_scheme": "",
-        "heading": "Защо Монтесори легло?",
-        "subheading": "По-ниско легло, повече самостоятелност и по-спокойна детска стая.",
-        "text": "<p>Монтесори леглата са създадени около ежедневието на детето. Ниската височина прави стаята по-достъпна, а рутината около съня - по-спокойна за цялото семейство.</p>",
-        "image": "shopify://shop_images/krebati-fb967505-masif-xylo-peykoy-se-gk-3_9362a5a0-ab7f-46b0-bc12-9dcaae4e61a1.jpg",
-        "image_alt": "",
-        "padding_top": 28,
-        "padding_bottom": 28
-      }
-    },
-    "bm_product_trust_bar_LbJdjw": {
-      "type": "bm-product-trust-bar",
-      "blocks": {
-        "trust_item_nnxcWe": {
-          "type": "trust_item",
-          "settings": {
-            "icon": "leaf",
-            "heading": "Безопасни материали",
-            "text": "Подбрани продукти за детска стая"
-          }
-        },
-        "trust_item_hqQ798": {
-          "type": "trust_item",
-          "settings": {
-            "icon": "chat",
-            "heading": "Консултация преди поръчка",
-            "text": "Помагаме ви да изберете правилния модел"
-          }
-        },
-        "trust_item_nBcF4A": {
-          "type": "trust_item",
-          "settings": {
-            "icon": "return",
-            "heading": "14 дни право на връщане",
-            "text": "Спокойна покупка за вашето семейство"
-          }
-        },
-        "trust_item_8M7Ly7": {
-          "type": "trust_item",
-          "disabled": true,
-          "settings": {
-            "icon": "delivery",
-            "heading": "Доставка с Еконт",
-            "text": "Удобна доставка до офис или адрес"
-          }
-        }
-      },
-      "block_order": [
-        "trust_item_nnxcWe",
-        "trust_item_hqQ798",
-        "trust_item_nBcF4A",
-        "trust_item_8M7Ly7"
-      ],
-      "name": "Baby Mood trust bar",
-      "settings": {
-        "color_scheme": "",
-        "columns_desktop": 3,
-        "padding_top": 16,
-        "padding_bottom": 16
-      }
-    },
-    "bm_product_specs_nRpPhk": {
-      "type": "bm-product-specs",
-      "name": "Baby Mood product specs",
-      "settings": {
-        "color_scheme": "",
-        "heading": "Детайли за продукта",
-        "subheading": "Важна информация за размери, материали и употреба.",
-        "padding_top": 24,
-        "padding_bottom": 24
-      }
-    },
-    "bm_product_accordion_details_wRcLcj": {
-      "type": "bm-product-accordion-details",
-      "name": "BM product accordions",
-      "settings": {
-        "color_scheme": "",
-        "description_heading": "Описание на продукта",
-        "description_open": true,
-        "empty_description_text": "Описание за този продукт ще бъде добавено скоро.",
-        "delivery_heading": "Доставка и получаване",
-        "delivery_text": "<p>Доставката се уточнява според наличност, адрес и размер на продукта. За големи мебели може да се свържем с вас за потвърждение преди изпращане.</p>",
-        "delivery_open": false,
-        "return_heading": "Връщане и консултация",
-        "return_text": "<p>Имате 14 дни право на връщане според условията на магазина. При нужда от помощ с избора на размер или модел, можете да се свържете с нас преди поръчка.</p>",
-        "return_open": false,
-        "padding_top": 24,
-        "padding_bottom": 24
       }
     }
   },
