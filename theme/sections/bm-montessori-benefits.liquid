@@ -1,0 +1,406 @@
+{% liquid
+  assign section_id = 'bm-montessori-benefits-' | append: section.id
+  assign visual_image = section.settings.image
+  assign visual_image_alt = section.settings.image_alt
+%}
+
+<section
+  id="{{ section_id }}"
+  class="bm-montessori-benefits color-{{ section.settings.color_scheme }} gradient"
+>
+  <div class="bm-montessori-benefits__inner">
+    <div class="bm-montessori-benefits__content">
+      {% if section.settings.heading != blank %}
+        <h2 class="bm-montessori-benefits__heading">{{ section.settings.heading }}</h2>
+      {% endif %}
+
+      {% if section.settings.subheading != blank %}
+        <p class="bm-montessori-benefits__subheading">{{ section.settings.subheading }}</p>
+      {% endif %}
+
+      {% if section.settings.text != blank %}
+        <div class="bm-montessori-benefits__text">
+          {{ section.settings.text }}
+        </div>
+      {% endif %}
+
+      {% if section.blocks.size > 0 %}
+        <ul class="bm-montessori-benefits__list" role="list">
+          {% for block in section.blocks %}
+            <li class="bm-montessori-benefits__list-item" {{ block.shopify_attributes }}>
+              <span class="bm-montessori-benefits__bullet" aria-hidden="true"></span>
+              <span>{{ block.settings.text }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div class="bm-montessori-benefits__visual">
+      <div class="bm-montessori-benefits__visual-card">
+        {% if visual_image != blank %}
+          {{
+            visual_image
+            | image_url: width: 1200
+            | image_tag:
+              widths: '360, 540, 720, 900, 1200',
+              sizes: '(min-width: 750px) 42vw, 100vw',
+              class: 'bm-montessori-benefits__image',
+              alt: visual_image_alt,
+              loading: 'lazy'
+          }}
+        {% else %}
+          <svg class="bm-montessori-benefits__room" viewBox="0 0 420 340" focusable="false" aria-hidden="true">
+            <path class="bm-montessori-benefits__rug" d="M92 268c28-18 91-24 150-19 54 5 90 18 90 34 0 21-53 34-121 34-70 0-133-18-119-49Z" />
+            <path class="bm-montessori-benefits__bed" d="M82 185h230a24 24 0 0 1 24 24v39H58v-39a24 24 0 0 1 24-24Z" />
+            <path class="bm-montessori-benefits__mattress" d="M78 170h238c16 0 29 13 29 29v19H49v-19c0-16 13-29 29-29Z" />
+            <path class="bm-montessori-benefits__rail" d="M75 155h232c7 0 13 6 13 13v14H62v-14c0-7 6-13 13-13Z" />
+            <path class="bm-montessori-benefits__house" d="M90 154 197 69l107 85" />
+            <path class="bm-montessori-benefits__post" d="M90 154v112M304 154v112" />
+            <path class="bm-montessori-benefits__pillow" d="M95 179h70c12 0 21 9 21 21v4H74v-4c0-12 9-21 21-21Z" />
+            <circle class="bm-montessori-benefits__sun" cx="333" cy="88" r="26" />
+            <path class="bm-montessori-benefits__star" d="M63 80 70 96l17 4-14 10 1 17-14-9-16 7 5-17-11-13 17-1 8-14Z" />
+            <path class="bm-montessori-benefits__plant-stem" d="M353 238c-6-31 4-58 21-78" />
+            <path class="bm-montessori-benefits__plant-leaf" d="M354 205c-24-2-39-14-43-37 22-1 39 11 43 37Z" />
+            <path class="bm-montessori-benefits__plant-leaf" d="M365 188c21-4 35-18 40-39-21 1-36 14-40 39Z" />
+            <path class="bm-montessori-benefits__pot" d="M329 237h62l-8 48h-46l-8-48Z" />
+          </svg>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% style %}
+  #{{ section_id }} {
+    --bm-benefits-ink: #2f2a26;
+    --bm-benefits-yellow: #ffd801;
+    --bm-benefits-border: #efe6c8;
+    --bm-benefits-cream: #fffdf5;
+    --bm-benefits-warm: #fff7cc;
+    --bm-benefits-muted: rgba(47, 42, 38, 0.72);
+    padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+    color: var(--bm-benefits-ink);
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(1.25rem, 4vw, 2rem);
+    align-items: center;
+    border: 1px solid var(--bm-benefits-border);
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at 94% 12%, rgba(255, 216, 1, 0.16), transparent 24rem),
+      linear-gradient(135deg, var(--bm-benefits-cream), var(--bm-benefits-warm));
+    padding: clamp(1.15rem, 4vw, 2rem);
+    overflow: hidden;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__content {
+    max-width: 42rem;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__heading {
+    margin: 0;
+    color: var(--bm-benefits-ink);
+    font-size: clamp(1.55rem, 4vw, 2.45rem);
+    line-height: 1.08;
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__subheading {
+    margin: 0.55rem 0 0;
+    max-width: 34rem;
+    color: var(--bm-benefits-ink);
+    font-size: clamp(1rem, 2vw, 1.18rem);
+    line-height: 1.42;
+    font-weight: 650;
+    letter-spacing: 0;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__text {
+    margin-top: 0.85rem;
+    max-width: 36rem;
+    color: var(--bm-benefits-muted);
+    font-size: 0.98rem;
+    line-height: 1.58;
+    letter-spacing: 0;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__text p {
+    margin: 0;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__text p + p {
+    margin-top: 0.7rem;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__list {
+    display: grid;
+    gap: 0.62rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__list-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.65rem;
+    align-items: start;
+    color: var(--bm-benefits-ink);
+    font-size: 0.98rem;
+    line-height: 1.42;
+    font-weight: 600;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__bullet {
+    width: 0.72rem;
+    height: 0.72rem;
+    margin-top: 0.35rem;
+    border-radius: 999px;
+    background: var(--bm-benefits-yellow);
+    box-shadow: 0 0 0 0.28rem rgba(255, 216, 1, 0.16);
+    flex: 0 0 auto;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__visual {
+    min-width: 0;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__visual-card {
+    position: relative;
+    max-width: 27rem;
+    margin-inline: auto;
+    padding: clamp(0.55rem, 1.6vw, 0.8rem);
+    border: 1px solid rgba(239, 230, 200, 0.9);
+    border-radius: 30px;
+    background:
+      radial-gradient(circle at 24% 22%, rgba(255, 216, 1, 0.18), transparent 9rem),
+      rgba(255, 255, 255, 0.72);
+    box-shadow: 0 12px 30px rgba(47, 42, 38, 0.055);
+    overflow: hidden;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__visual-card::before,
+  #{{ section_id }} .bm-montessori-benefits__visual-card::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+    background: rgba(255, 216, 1, 0.34);
+    pointer-events: none;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__visual-card::before {
+    width: 0.6rem;
+    height: 0.6rem;
+    top: 1.2rem;
+    right: 1.4rem;
+    box-shadow: -1.15rem 1rem 0 -0.12rem rgba(239, 230, 200, 0.95);
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__visual-card::after {
+    width: 0.48rem;
+    height: 0.48rem;
+    left: 1.35rem;
+    bottom: 1.4rem;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__room {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1.18 / 1;
+    height: auto;
+    min-height: 16rem;
+    border-radius: 22px;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__room path,
+  #{{ section_id }} .bm-montessori-benefits__room circle {
+    vector-effect: non-scaling-stroke;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__rug {
+    fill: #fff1a8;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__bed {
+    fill: #f4d9b5;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__mattress {
+    fill: #ffffff;
+    stroke: var(--bm-benefits-border);
+    stroke-width: 3;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__rail,
+  #{{ section_id }} .bm-montessori-benefits__pillow {
+    fill: #fff8df;
+    stroke: var(--bm-benefits-ink);
+    stroke-width: 3;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__house,
+  #{{ section_id }} .bm-montessori-benefits__post,
+  #{{ section_id }} .bm-montessori-benefits__plant-stem {
+    fill: none;
+    stroke: var(--bm-benefits-ink);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 8;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__sun {
+    fill: var(--bm-benefits-yellow);
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__star {
+    fill: #f7c9a5;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__plant-leaf {
+    fill: #b6d0a5;
+    stroke: var(--bm-benefits-ink);
+    stroke-width: 3;
+  }
+
+  #{{ section_id }} .bm-montessori-benefits__pot {
+    fill: #e6b88f;
+    stroke: var(--bm-benefits-ink);
+    stroke-width: 3;
+  }
+
+  @media screen and (min-width: 750px) {
+    #{{ section_id }} .bm-montessori-benefits__inner {
+      grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.95fr);
+      padding: clamp(1.5rem, 4vw, 2.6rem);
+    }
+
+    #{{ section_id }} .bm-montessori-benefits__list {
+      gap: 0.7rem;
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "BM Montessori benefits",
+  "tag": "section",
+  "class": "section section-bm-montessori-benefits",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Защо Монтесори легло?"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "По-ниско легло, повече самостоятелност и по-спокойна детска стая."
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Монтесори леглата са създадени около ежедневието на детето. Ниската височина прави стаята по-достъпна, а рутината около съня - по-спокойна за цялото семейство.</p>"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Детето може по-лесно да се качва и слиза само"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "BM Montessori benefits",
+      "blocks": [
+        {
+          "type": "benefit",
+          "settings": {
+            "text": "Детето може по-лесно да се качва и слиза само"
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "text": "Подкрепя усещането за самостоятелност"
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "text": "Помага за по-спокойна вечерна рутина"
+          }
+        },
+        {
+          "type": "benefit",
+          "settings": {
+            "text": "Създава уютна и достъпна детска среда"
+          }
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}

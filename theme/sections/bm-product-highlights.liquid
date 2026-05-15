@@ -1,0 +1,224 @@
+{% liquid
+  assign section_id = 'bm-product-highlights-' | append: section.id
+  assign highlights = product.metafields.custom.product_highlights.value
+%}
+
+{% if highlights != blank %}
+  <section
+    id="{{ section_id }}"
+    class="bm-product-highlights color-{{ section.settings.color_scheme }} gradient"
+  >
+    <div class="bm-product-highlights__header">
+      {% if section.settings.heading != blank %}
+        <h2 class="bm-product-highlights__heading">{{ section.settings.heading }}</h2>
+      {% endif %}
+
+      {% if section.settings.subheading != blank %}
+        <p class="bm-product-highlights__subheading">{{ section.settings.subheading }}</p>
+      {% endif %}
+    </div>
+
+    <div class="bm-product-highlights__grid">
+      {% for highlight in highlights %}
+        {% if highlight != blank %}
+          <div class="bm-product-highlights__item">
+            <span class="bm-product-highlights__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M12 2.8 14.4 9l6.5.5-5 4.2 1.5 6.4-5.4-3.4-5.4 3.4 1.5-6.4-5-4.2 6.5-.5L12 2.8Z" />
+              </svg>
+            </span>
+
+            <p class="bm-product-highlights__text">{{ highlight }}</p>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% style %}
+  #{{ section_id }} {
+    --bm-highlights-ink: #2f2a26;
+    --bm-highlights-yellow: #ffd801;
+    --bm-highlights-card: #fff9df;
+    --bm-highlights-card-soft: #fffdf4;
+    --bm-highlights-border: #efe6c8;
+    --bm-highlights-dot: rgba(255, 216, 1, 0.4);
+    --bm-highlights-gap: clamp(0.75rem, 2vw, 1rem);
+    padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+    color: var(--bm-highlights-ink);
+  }
+
+  #{{ section_id }} .bm-product-highlights__header {
+    max-width: 44rem;
+    margin-bottom: clamp(1rem, 2.5vw, 1.4rem);
+  }
+
+  #{{ section_id }} .bm-product-highlights__heading {
+    margin: 0;
+    color: var(--bm-highlights-ink);
+    font-size: clamp(1.35rem, 3vw, 2rem);
+    line-height: 1.12;
+    font-weight: 750;
+    letter-spacing: 0;
+  }
+
+  #{{ section_id }} .bm-product-highlights__subheading {
+    margin: 0.45rem 0 0;
+    max-width: 38rem;
+    color: rgba(47, 42, 38, 0.72);
+    font-size: clamp(0.95rem, 1.8vw, 1rem);
+    line-height: 1.48;
+    letter-spacing: 0;
+  }
+
+  #{{ section_id }} .bm-product-highlights__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--bm-highlights-gap);
+  }
+
+  #{{ section_id }} .bm-product-highlights__item {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.8rem;
+    min-width: 0;
+    padding: 0.95rem 1rem;
+    border: 1px solid var(--bm-highlights-border);
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(255, 216, 1, 0.18), transparent 34%),
+      linear-gradient(145deg, var(--bm-highlights-card), var(--bm-highlights-card-soft));
+    box-shadow: 0 6px 18px rgba(47, 42, 38, 0.04);
+  }
+
+  #{{ section_id }} .bm-product-highlights__item::after {
+    content: "";
+    position: absolute;
+    top: 0.62rem;
+    right: 0.72rem;
+    width: 0.36rem;
+    height: 0.36rem;
+    border-radius: 999px;
+    background: var(--bm-highlights-dot);
+    box-shadow:
+      -0.54rem 0.5rem 0 -0.08rem rgba(255, 216, 1, 0.22),
+      0.46rem 0.64rem 0 -0.12rem rgba(239, 230, 200, 0.86);
+    pointer-events: none;
+  }
+
+  #{{ section_id }} .bm-product-highlights__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: var(--bm-highlights-yellow);
+    color: var(--bm-highlights-ink);
+    flex: 0 0 auto;
+    box-shadow: inset 0 -1px 0 rgba(47, 42, 38, 0.1);
+  }
+
+  #{{ section_id }} .bm-product-highlights__icon svg {
+    width: 1rem;
+    height: 1rem;
+    display: block;
+    fill: currentColor;
+  }
+
+  #{{ section_id }} .bm-product-highlights__text {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    color: var(--bm-highlights-ink);
+    font-size: 0.95rem;
+    line-height: 1.38;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  @media screen and (min-width: 750px) {
+    #{{ section_id }} .bm-product-highlights__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #{{ section_id }} .bm-product-highlights__item {
+      padding: 1.05rem;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    #{{ section_id }} .bm-product-highlights__grid {
+      grid-template-columns: repeat({{ section.settings.columns_desktop }}, minmax(0, 1fr));
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Baby Mood highlights",
+  "tag": "section",
+  "class": "section section-bm-product-highlights",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Защо ще го харесате"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Кратки предимства, които правят продукта практичен избор за детската стая."
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    }
+  ],
+  "presets": [
+    {
+      "name": "Baby Mood highlights"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}

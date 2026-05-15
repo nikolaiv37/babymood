@@ -1,0 +1,281 @@
+{% liquid
+  assign section_id = 'bm-product-cta-reassurance-' | append: section.id
+%}
+
+<section
+  id="{{ section_id }}"
+  class="bm-product-cta-reassurance color-{{ section.settings.color_scheme }} gradient"
+>
+  <div class="bm-product-cta-reassurance__grid">
+    {% for block in section.blocks %}
+      <div class="bm-product-cta-reassurance__item" {{ block.shopify_attributes }}>
+        <div class="bm-product-cta-reassurance__icon" aria-hidden="true">
+          {% case block.settings.icon %}
+            {% when 'return' %}
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M12 4a8 8 0 1 1-7.3 11.3l2.2-1A5.6 5.6 0 1 0 7.4 9h2.1v2.4H3.1V5h2.4v2A8 8 0 0 1 12 4Zm1.1 4.1v4.1l3 1.8-1.1 1.9-4.2-2.5V8.1h2.3Z" />
+              </svg>
+            {% when 'payment' %}
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M4.5 5.5h15A2.5 2.5 0 0 1 22 8v8a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 16V8a2.5 2.5 0 0 1 2.5-2.5Zm0 2.3a.2.2 0 0 0-.2.2v1.1h15.4V8a.2.2 0 0 0-.2-.2h-15Zm-.2 5v3.2c0 .1.1.2.2.2h15c.1 0 .2-.1.2-.2v-3.2H4.3Zm2 1.2h5v2h-5v-2Z" />
+              </svg>
+            {% when 'check' %}
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M12 2.8 20 6v5.6c0 5-3.3 8.5-8 9.8-4.7-1.3-8-4.8-8-9.8V6l8-3.2Zm0 2.6L6.4 7.6v4c0 3.6 2.2 6.1 5.6 7.2 3.4-1.1 5.6-3.6 5.6-7.2v-4L12 5.4Zm3.9 5.2-4.8 4.8-2.8-2.8 1.6-1.6 1.2 1.2 3.2-3.2 1.6 1.6Z" />
+              </svg>
+            {% when 'delivery' %}
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M3 5.2h11.8v3h2.6l3.6 4.2v5.2h-2.2a3 3 0 0 1-5.8 0H9.8a3 3 0 0 1-5.8 0H3V5.2Zm2.3 2.3v7.6h.4a3 3 0 0 1 3.8 0h5.3V7.5H5.3Zm11.8 3v4.6h1.6v-1.8l-2.4-2.8h.8ZM6.9 18.7a.9.9 0 1 0 0-1.8.9.9 0 0 0 0 1.8Zm9 0a.9.9 0 1 0 0-1.8.9.9 0 0 0 0 1.8Z" />
+              </svg>
+          {% endcase %}
+        </div>
+
+        <div class="bm-product-cta-reassurance__content">
+          {% if block.settings.heading != blank %}
+            <h3 class="bm-product-cta-reassurance__heading">{{ block.settings.heading }}</h3>
+          {% endif %}
+
+          {% if block.settings.text != blank %}
+            <p class="bm-product-cta-reassurance__text">{{ block.settings.text }}</p>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% style %}
+  #{{ section_id }} {
+    --bm-cta-ink: #2f2a26;
+    --bm-cta-yellow: #ffd801;
+    --bm-cta-border: #efe6c8;
+    --bm-cta-cream: #fffdf5;
+    --bm-cta-white: #ffffff;
+    --bm-cta-muted: rgba(47, 42, 38, 0.7);
+    padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+    color: var(--bm-cta-ink);
+  }
+
+  #{{ section_id }} .bm-product-cta-reassurance__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    width: 100%;
+  }
+
+  #{{ section_id }} .bm-product-cta-reassurance__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.78rem 0.85rem;
+    border: 1px solid var(--bm-cta-border);
+    border-radius: 18px;
+    background:
+      linear-gradient(145deg, rgba(255, 253, 245, 0.96), rgba(255, 255, 255, 0.98)),
+      var(--bm-cta-white);
+    box-shadow: 0 5px 14px rgba(47, 42, 38, 0.035);
+    overflow: hidden;
+  }
+
+  #{{ section_id }} .bm-product-cta-reassurance__item::after {
+    content: "";
+    position: absolute;
+    right: 0.7rem;
+    top: 0.65rem;
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: rgba(255, 216, 1, 0.38);
+    pointer-events: none;
+  }
+
+  #{{ section_id }} .bm-product-cta-reassurance__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid rgba(239, 230, 200, 0.95);
+    border-radius: 14px;
+    background:
+      radial-gradient(circle at 35% 25%, rgba(255, 216, 1, 0.38), transparent 58%),
+      var(--bm-cta-cream);
+    color: var(--bm-cta-ink);
+    flex: 0 0 auto;
+  }
+
+  #{{ section_id }} .bm-product-cta-reassurance__icon svg {
+    display: block;
+    width: 1.18rem;
+    height: 1.18rem;
+    fill: currentColor;
+  }
+
+  #{{ section_id }} .bm-product-cta-reassurance__content {
+    min-width: 0;
+  }
+
+  #{{ section_id }} .bm-product-cta-reassurance__heading {
+    margin: 0;
+    color: var(--bm-cta-ink);
+    font-size: 0.94rem;
+    line-height: 1.2;
+    font-weight: 750;
+    letter-spacing: 0;
+  }
+
+  #{{ section_id }} .bm-product-cta-reassurance__text {
+    margin: 0.18rem 0 0;
+    color: var(--bm-cta-muted);
+    font-size: 0.84rem;
+    line-height: 1.35;
+    letter-spacing: 0;
+  }
+
+  @media screen and (min-width: 550px) {
+    #{{ section_id }} .bm-product-cta-reassurance__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    #{{ section_id }} .bm-product-cta-reassurance__grid {
+      grid-template-columns: repeat({{ section.settings.columns_desktop }}, minmax(0, 1fr));
+      gap: 0.72rem;
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "BM CTA reassurance",
+  "tag": "section",
+  "class": "section section-bm-product-cta-reassurance",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 64,
+      "step": 4,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 64,
+      "step": 4,
+      "unit": "px",
+      "default": 12
+    }
+  ],
+  "blocks": [
+    {
+      "type": "reassurance",
+      "name": "Reassurance item",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "return",
+              "label": "Return"
+            },
+            {
+              "value": "payment",
+              "label": "Payment"
+            },
+            {
+              "value": "check",
+              "label": "Check"
+            },
+            {
+              "value": "delivery",
+              "label": "Delivery"
+            }
+          ],
+          "default": "return"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "14 дни връщане"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Спокойна и лесна покупка"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "BM CTA reassurance",
+      "blocks": [
+        {
+          "type": "reassurance",
+          "settings": {
+            "icon": "return",
+            "heading": "14 дни връщане",
+            "text": "Спокойна и лесна покупка"
+          }
+        },
+        {
+          "type": "reassurance",
+          "settings": {
+            "icon": "payment",
+            "heading": "Без предплащане",
+            "text": "Плащане при получаване"
+          }
+        },
+        {
+          "type": "reassurance",
+          "settings": {
+            "icon": "check",
+            "heading": "Сигурна поръчка",
+            "text": "Проверка преди изпращане"
+          }
+        },
+        {
+          "type": "reassurance",
+          "settings": {
+            "icon": "delivery",
+            "heading": "Доставка с Еконт",
+            "text": "До офис или адрес в България"
+          }
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}
