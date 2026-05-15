@@ -69,7 +69,14 @@
 
     <div class="bm-home-hero__content">
       {%- if s.heading != blank -%}
-        <h1 class="bm-home-hero__heading">{{ s.heading }}</h1>
+        {%- assign hero_highlight = s.heading_highlight -%}
+        {%- if hero_highlight != blank and s.heading contains hero_highlight -%}
+          {%- capture hero_highlight_html -%}<span class="bm-home-hero__heading-highlight">{{ hero_highlight }}</span>{%- endcapture -%}
+          {%- assign hero_heading_rendered = s.heading | replace_first: hero_highlight, hero_highlight_html -%}
+          <h1 class="bm-home-hero__heading">{{ hero_heading_rendered }}</h1>
+        {%- else -%}
+          <h1 class="bm-home-hero__heading">{{ s.heading }}</h1>
+        {%- endif -%}
       {%- endif -%}
 
       {%- if s.subheading != blank -%}
@@ -233,6 +240,14 @@
     letter-spacing: -0.012em;
     color: var(--bm-hero-ink);
     text-wrap: balance;
+  }
+
+  .bm-home-hero__heading-highlight {
+    color: #c99700;
+    background: linear-gradient(135deg, #c99700 0%, #e9b500 50%, #d6a300 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .bm-home-hero__subheading {
@@ -425,6 +440,13 @@
       "default": "Монтесори легла и детски мебели за уютна детска стая"
     },
     {
+      "type": "text",
+      "id": "heading_highlight",
+      "label": "Highlighted phrase",
+      "info": "If this phrase appears in the heading, it is rendered in warm gold.",
+      "default": "Монтесори легла"
+    },
+    {
       "type": "textarea",
       "id": "subheading",
       "label": "Subheading",
@@ -464,19 +486,19 @@
       "type": "text",
       "id": "chip_1",
       "label": "Chip 1",
-      "default": "14 дни връщане"
+      "default": "Подбрани модели"
     },
     {
       "type": "text",
       "id": "chip_2",
       "label": "Chip 2",
-      "default": "Доставка с Еконт"
+      "default": "Безопасен избор"
     },
     {
       "type": "text",
       "id": "chip_3",
       "label": "Chip 3",
-      "default": "Консултация преди поръчка"
+      "default": "Консултация преди покупка"
     },
     {
       "type": "header",
