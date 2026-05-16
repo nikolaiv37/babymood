@@ -4,6 +4,15 @@
   assign block_settings = block.settings
   assign product_resource = closest.product
   assign selected_variant = product_resource.selected_or_first_available_variant
+  assign compare_at_price = selected_variant.compare_at_price
+  assign price = selected_variant.price
+  assign show_bm_savings = false
+  assign savings_amount = 0
+
+  if selected_variant != blank and compare_at_price > price
+    assign show_bm_savings = true
+    assign savings_amount = compare_at_price | minus: price
+  endif
 -%}
 
 {% liquid
@@ -37,7 +46,7 @@
 %}
 
 <product-price
-  class="text-block {{ text_block_classes }} text-{{ block_settings.alignment }} {{ block_settings.type_preset | default: 'paragraph' }} spacing-style"
+  class="text-block {{ text_block_classes }} text-{{ block_settings.alignment }} {{ block_settings.type_preset | default: 'paragraph' }} spacing-style{% if template.name == 'product' %} bm-product-price{% endif %}{% if show_bm_savings %} bm-product-price--on-sale{% endif %}"
   data-block-id="{{ block.id }}"
   data-product-id="{{ product_resource.id }}"
   style="
@@ -52,6 +61,12 @@
     product_resource: product_resource,
     show_sale_price_first: block_settings.show_sale_price_first
   %}
+
+  {% if show_bm_savings %}
+    <div class="bm-product-price__saving">
+      Спестявате {{ savings_amount | money }}
+    </div>
+  {% endif %}
 
   {% if block_settings.show_tax_info %}
     <div class="tax-note">
@@ -83,6 +98,77 @@
     </div>
   {%- endif -%}
 </product-price>
+
+{% stylesheet %}
+  product-price.bm-product-price {
+    --bm-price-ink: #2f2a26;
+    --bm-price-gold: #b88716;
+    --bm-price-gold-soft: #fff4c7;
+    --bm-price-border: #efe6c8;
+    --bm-price-muted: rgba(47, 42, 38, 0.64);
+    display: grid;
+    justify-items: start;
+    gap: 0.3rem;
+    color: var(--bm-price-ink);
+  }
+
+  product-price.bm-product-price [ref='priceContainer'] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.34rem 0.58rem;
+  }
+
+  product-price.bm-product-price .price {
+    color: var(--bm-price-ink);
+    font-size: clamp(1.55rem, 4vw, 2.05rem);
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+
+  product-price.bm-product-price .price-item--sale {
+    color: var(--bm-price-gold);
+  }
+
+  product-price.bm-product-price .compare-at-price {
+    color: var(--bm-price-muted);
+    font-size: clamp(0.95rem, 2vw, 1.08rem);
+    line-height: 1.1;
+    font-weight: 600;
+    text-decoration: line-through;
+    text-decoration-thickness: 0.08em;
+    text-decoration-color: rgba(47, 42, 38, 0.42);
+  }
+
+  product-price.bm-product-price .price-item__group {
+    display: inline-flex;
+    align-items: baseline;
+  }
+
+  product-price.bm-product-price .bm-product-price__saving {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    min-height: 1.55rem;
+    padding: 0.2rem 0.52rem;
+    border: 1px solid rgba(239, 230, 200, 0.95);
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(255, 244, 199, 0.64), #fffdf5);
+    color: var(--bm-price-ink);
+    font-size: 0.78rem;
+    line-height: 1.15;
+    font-weight: 650;
+    letter-spacing: 0;
+  }
+
+  product-price.bm-product-price .tax-note {
+    margin-top: 0.1rem;
+    color: var(--bm-price-muted);
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+{% endstylesheet %}
 
 {% schema %}
 {

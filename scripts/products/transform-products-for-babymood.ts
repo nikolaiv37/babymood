@@ -5,9 +5,20 @@ import type { BabyMoodMetafield, BabyMoodProduct, BabyMoodTransformFile, SourceE
 const COLLECTION_RULES: Array<{ handle: string; terms: string[] }> = [
   { handle: 'montessori-legla', terms: ['montessori', 'монтесори', 'floor bed', 'подово'] },
   { handle: 'detski-legla', terms: ['bed', 'легло', 'children bed', 'kids bed'] },
-  { handle: 'detski-mebeli', terms: ['furniture', 'мебел', 'шкаф', 'скрин', 'етажер'] },
-  { handle: 'detski-lampi', terms: ['lamp', 'лампа', 'осветление'] }
+  { handle: 'detski-mebeli', terms: ['furniture', 'мебел', 'шкаф', 'скрин', 'етажер', 'детска стая'] },
+  { handle: 'detski-lampi', terms: ['lamp', 'лампа', 'лампи', 'таванни лампи', 'осветление'] }
 ]
+
+const TEMPLATE_RULES: Array<{ sourceTag: string; templateSuffix: string }> = [
+  { sourceTag: 'Легла Монтесори', templateSuffix: 'montesori-product-temp' },
+  { sourceTag: 'Детска стая', templateSuffix: 'kids-room-product-temp' },
+  { sourceTag: 'Детски таванни лампи', templateSuffix: 'kids-lamps-product-temp' }
+]
+
+const SOURCE_TAG_COLLECTIONS: Record<string, string[]> = {
+  [normalizeCategoryValue('Детска стая')]: ['detski-mebeli'],
+  [normalizeCategoryValue('Детски таванни лампи')]: ['detski-lampi']
+}
 
 async function main() {
   const args = parseArgs()
@@ -21,7 +32,9 @@ async function main() {
   const outputFile = getStringArg(args, 'output-file') ?? `data/transformed/${timestampForFile()}-babymood-products.json`
   const limit = getNumberArg(args, 'limit')
   const source = readJsonFile<SourceExportFile>(sourceFile)
-  const products = source.products.slice(0, limit ?? source.products.length).map(transformProduct)
+  const products = source.products
+    .slice(0, limit ?? source.products.length)
+    .map((product) => transformProduct(product, source.source.tag))
 
   const transformed: BabyMoodTransformFile = {
     transformedAt: new Date().toISOString(),
@@ -30,20 +43,27 @@ async function main() {
   }
 
   const path = writeJsonFile(outputFile, transformed)
-  logger.success('Products transformed for Baby Mood', { sourceFile, path, productCount: products.length })
+  logger.success('Products transformed for Baby Mood', {
+    sourceFile,
+    path,
+    productCount: products.length,
+    sourceSelector: source.source,
+    categorySummary: summarizeTemplateAssignments(source, products)
+  })
 }
 
-function transformProduct(product: SourceProduct): BabyMoodProduct {
+function transformProduct(product: SourceProduct, sourceTag?: string): BabyMoodProduct {
   const title = makeBulgarianTitle(product)
   const descriptionText = stripHtml(product.descriptionHtml)
   const fullText = `${product.title} ${descriptionText}`
-  const collections = inferCollections(product)
+  const collections = inferCollections(product, sourceTag)
   const tags = mapTags(product, collections)
   const mattressSize = inferMattressSize(fullText)
   const dimensions = inferDimensions(fullText)
   const material = inferMaterial(fullText)
   const color = inferColor(fullText)
   const isMontessori = isMontessoriBed(product, title)
+  const templateSuffix = inferTemplateSuffix(product, sourceTag) ?? (isMontessori ? 'montesori-product-temp' : undefined)
 
   return {
     sourceProductId: product.id,
@@ -54,7 +74,7 @@ function transformProduct(product: SourceProduct): BabyMoodProduct {
     vendor: 'Baby Mood',
     productType: normalizeProductType(product),
     status: isMontessori ? 'ACTIVE' : 'DRAFT',
-    ...(isMontessori ? { templateSuffix: 'montesori-product-temp' } : {}),
+    ...(templateSuffix ? { templateSuffix } : {}),
     tags,
     seo: {
       title: truncate(`${title} | Baby Mood`, 70),
@@ -100,6 +120,40 @@ function transformProduct(product: SourceProduct): BabyMoodProduct {
       textMetafield('faq_3_question', 'Как се поддържа продуктът?'),
       longMetafield('faq_3_answer', 'Препоръчва се нежно почистване с мека кърпа и спазване на указанията на производителя.')
     ])
+  }
+}
+
+function inferTemplateSuffix(product: SourceProduct, sourceTag?: string): string | undefined {
+  const sourceRule = sourceTag ? TEMPLATE_RULES.find((rule) => isSameCategory(rule.sourceTag, sourceTag)) : undefined
+  if (sourceRule) return sourceRule.templateSuffix
+
+  const tags = product.tags.map(normalizeCategoryValue)
+  return TEMPLATE_RULES.find((rule) => tags.includes(normalizeCategoryValue(rule.sourceTag)))?.templateSuffix
+}
+
+function normalizeCategoryValue(value: string): string {
+  return value.trim().toLocaleLowerCase('bg-BG')
+}
+
+function isSameCategory(left: string, right: string): boolean {
+  return normalizeCategoryValue(left) === normalizeCategoryValue(right)
+}
+
+function summarizeTemplateAssignments(source: SourceExportFile, products: BabyMoodProduct[]) {
+  const templateCounts: Record<string, number> = {}
+  const collectionCounts: Record<string, number> = {}
+  for (const product of products) {
+    const suffix = product.templateSuffix ?? 'none'
+    templateCounts[suffix] = (templateCounts[suffix] ?? 0) + 1
+    for (const collection of product.collections) {
+      collectionCounts[collection] = (collectionCounts[collection] ?? 0) + 1
+    }
+  }
+
+  return {
+    detectedSourceTag: source.source.tag ?? null,
+    assignedTemplateSuffixes: templateCounts,
+    assignedCollections: collectionCounts
   }
 }
 
@@ -217,10 +271,23 @@ function cleanDescriptionHtml(product: SourceProduct, title: string): string {
   return `${intro}${source}`.replace(/>\s+</g, '><').trim()
 }
 
-function inferCollections(product: SourceProduct): string[] {
+function inferCollections(product: SourceProduct, sourceTag?: string): string[] {
+  const sourceCollections = sourceTag ? SOURCE_TAG_COLLECTIONS[normalizeCategoryValue(sourceTag)] : undefined
+  if (sourceCollections) {
+    return Array.from(new Set([...sourceCollections, ...inferSupplementalCollections(product, sourceTag ?? '')]))
+  }
+
   const haystack = `${product.title} ${product.productType} ${product.tags.join(' ')}`.toLowerCase()
   const matches = COLLECTION_RULES.filter((rule) => rule.terms.some((term) => haystack.includes(term))).map((rule) => rule.handle)
   return Array.from(new Set(matches.length > 0 ? matches : ['detski-mebeli']))
+}
+
+function inferSupplementalCollections(product: SourceProduct, sourceTag: string): string[] {
+  if (isSameCategory(sourceTag, 'Детска стая')) {
+    return isBedProduct(product) ? ['detski-legla'] : []
+  }
+
+  return []
 }
 
 function mapTags(product: SourceProduct, collections: string[]): string[] {
