@@ -1,0 +1,192 @@
+{% liquid
+  assign section_id = 'bm-collection-seo-' | append: section.id
+  assign has_highlights = false
+
+  if section.settings.highlight_1 != blank or section.settings.highlight_2 != blank or section.settings.highlight_3 != blank
+    assign has_highlights = true
+  endif
+%}
+
+{% if section.settings.heading != blank or section.settings.body != blank or has_highlights %}
+  <section
+    id="{{ section_id }}"
+    class="bm-collection-seo color-{{ section.settings.color_scheme }} gradient"
+  >
+    <div class="bm-collection-seo__inner">
+      <div class="bm-collection-seo__content">
+        {% if section.settings.heading != blank %}
+          <h2 class="bm-collection-seo__heading">{{ section.settings.heading }}</h2>
+        {% endif %}
+
+        {% if section.settings.body != blank %}
+          <div class="bm-collection-seo__body rte">
+            {{ section.settings.body }}
+          </div>
+        {% endif %}
+
+        {% if has_highlights %}
+          <div class="bm-collection-seo__highlights" aria-label="{{ 'Акценти' | escape }}">
+            {% if section.settings.highlight_1 != blank %}
+              <span class="bm-collection-seo__highlight">{{ section.settings.highlight_1 }}</span>
+            {% endif %}
+            {% if section.settings.highlight_2 != blank %}
+              <span class="bm-collection-seo__highlight">{{ section.settings.highlight_2 }}</span>
+            {% endif %}
+            {% if section.settings.highlight_3 != blank %}
+              <span class="bm-collection-seo__highlight">{{ section.settings.highlight_3 }}</span>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{% style %}
+  #{{ section_id }} {
+    --bm-seo-ink: #2f2a26;
+    --bm-seo-muted: rgba(47, 42, 38, 0.72);
+    --bm-seo-border: #efe6c8;
+    --bm-seo-cream: #fffdf5;
+    --bm-seo-yellow: #ffd801;
+    padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+    color: var(--bm-seo-ink);
+  }
+
+  #{{ section_id }} .bm-collection-seo__inner {
+    width: min(880px, calc(100% - 2rem));
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .bm-collection-seo__content {
+    padding: clamp(1rem, 2.4vw, 1.45rem);
+    border: 1px solid rgba(239, 230, 200, 0.72);
+    border-radius: 20px;
+    background:
+      linear-gradient(180deg, rgba(255, 253, 245, 0.96), rgba(255, 255, 255, 0.92));
+    box-shadow: 0 10px 24px rgba(47, 42, 38, 0.035);
+  }
+
+  #{{ section_id }} .bm-collection-seo__heading {
+    max-width: 42rem;
+    margin: 0;
+    color: var(--bm-seo-ink);
+    font-size: clamp(1.28rem, 2.7vw, 1.85rem);
+    line-height: 1.12;
+    letter-spacing: 0;
+  }
+
+  #{{ section_id }} .bm-collection-seo__body {
+    margin-top: 0.75rem;
+    color: var(--bm-seo-muted);
+    font-size: clamp(0.94rem, 1.5vw, 1rem);
+    line-height: 1.62;
+  }
+
+  #{{ section_id }} .bm-collection-seo__body p {
+    margin-block: 0;
+  }
+
+  #{{ section_id }} .bm-collection-seo__body p + p {
+    margin-top: 0.72rem;
+  }
+
+  #{{ section_id }} .bm-collection-seo__highlights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.9rem;
+  }
+
+  #{{ section_id }} .bm-collection-seo__highlight {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.32rem 0.58rem;
+    border: 1px solid rgba(239, 230, 200, 0.7);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.62);
+    color: var(--bm-seo-ink);
+    font-size: 0.8rem;
+    line-height: 1.2;
+    font-weight: 600;
+  }
+
+  #{{ section_id }} .bm-collection-seo__highlight::before {
+    content: "";
+    width: 0.36rem;
+    height: 0.36rem;
+    border-radius: 999px;
+    background: var(--bm-seo-yellow);
+    flex: 0 0 auto;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "BM collection SEO text",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Полезна информация"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Body text",
+      "default": "<p>Добавете кратък, полезен текст за колекцията.</p>"
+    },
+    {
+      "type": "text",
+      "id": "highlight_1",
+      "label": "Highlight 1"
+    },
+    {
+      "type": "text",
+      "id": "highlight_2",
+      "label": "Highlight 2"
+    },
+    {
+      "type": "text",
+      "id": "highlight_3",
+      "label": "Highlight 3"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "BM collection SEO text"
+    }
+  ]
+}
+{% endschema %}
