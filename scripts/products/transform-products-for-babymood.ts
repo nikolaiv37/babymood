@@ -12,12 +12,14 @@ const COLLECTION_RULES: Array<{ handle: string; terms: string[] }> = [
 const TEMPLATE_RULES: Array<{ sourceTag: string; templateSuffix: string }> = [
   { sourceTag: 'Легла Монтесори', templateSuffix: 'montesori-product-temp' },
   { sourceTag: 'Детска стая', templateSuffix: 'kids-room-product-temp' },
-  { sourceTag: 'Детски таванни лампи', templateSuffix: 'kids-lamps-product-temp' }
+  { sourceTag: 'Детски таванни лампи', templateSuffix: 'kids-lamps-product-temp' },
+  { sourceTag: 'Настолни лампи', templateSuffix: 'kids-lamps-product-temp' }
 ]
 
 const SOURCE_TAG_COLLECTIONS: Record<string, string[]> = {
   [normalizeCategoryValue('Детска стая')]: ['detski-mebeli'],
-  [normalizeCategoryValue('Детски таванни лампи')]: ['detski-lampi']
+  [normalizeCategoryValue('Детски таванни лампи')]: ['detski-lampi'],
+  [normalizeCategoryValue('Настолни лампи')]: ['detski-lampi']
 }
 
 async function main() {
@@ -32,7 +34,8 @@ async function main() {
   const outputFile = getStringArg(args, 'output-file') ?? `data/transformed/${timestampForFile()}-babymood-products.json`
   const limit = getNumberArg(args, 'limit')
   const source = readJsonFile<SourceExportFile>(sourceFile)
-  const products = source.products
+  const filteredProducts = filterSourceProductsForTransform(source.products, source.source.tag)
+  const products = filteredProducts
     .slice(0, limit ?? source.products.length)
     .map((product) => transformProduct(product, source.source.tag))
 
@@ -47,8 +50,9 @@ async function main() {
     sourceFile,
     path,
     productCount: products.length,
+    skippedProductCount: source.products.length - filteredProducts.length,
     sourceSelector: source.source,
-    categorySummary: summarizeTemplateAssignments(source, products)
+    categorySummary: summarizeTemplateAssignments(source, products, source.products.length - filteredProducts.length)
   })
 }
 
@@ -56,14 +60,16 @@ function transformProduct(product: SourceProduct, sourceTag?: string): BabyMoodP
   const title = makeBulgarianTitle(product)
   const descriptionText = stripHtml(product.descriptionHtml)
   const fullText = `${product.title} ${descriptionText}`
+  const isLampCategory = isLampSourceTag(sourceTag)
   const collections = inferCollections(product, sourceTag)
-  const tags = mapTags(product, collections)
-  const mattressSize = inferMattressSize(fullText)
+  const tags = mapTags(product, collections, sourceTag)
+  const mattressSize = isLampCategory || !isBedProduct(product) ? undefined : inferMattressSize(fullText)
   const dimensions = inferDimensions(fullText)
   const material = inferMaterial(fullText)
   const color = inferColor(fullText)
   const isMontessori = isMontessoriBed(product, title)
   const templateSuffix = inferTemplateSuffix(product, sourceTag) ?? (isMontessori ? 'montesori-product-temp' : undefined)
+  const content = productContentForCategory(product, title, descriptionText, sourceTag)
 
   return {
     sourceProductId: product.id,
@@ -101,26 +107,123 @@ function transformProduct(product: SourceProduct, sourceTag?: string): BabyMoodP
       selectedOptions: variant.selectedOptions
     })),
     metafields: compactMetafields([
-      textMetafield('suitable_age', inferAge(product)),
+      textMetafield('suitable_age', content.suitableAge),
       textMetafield('mattress_size', mattressSize),
       textMetafield('material', material),
       textMetafield('color', color),
       textMetafield('dimensions', dimensions),
-      longMetafield('whats_included', inferWhatsIncluded(descriptionText)),
-      longMetafield('parent_benefit', 'Създаден за по-спокойна детска стая, лесна ежедневна употреба и уютна среда за сън и игра.'),
-      longMetafield('safety_note', 'Използвайте продукта според инструкциите на производителя и под надзор, съобразен с възрастта на детето.'),
+      longMetafield('whats_included', content.whatsIncluded),
+      longMetafield('parent_benefit', content.parentBenefit),
+      longMetafield('safety_note', content.safetyNote),
       longMetafield('delivery_note', 'Доставката се уточнява според наличност, адрес и размер на продукта.'),
       longMetafield('care_instructions', 'Почиствайте с мека суха или леко влажна кърпа. Избягвайте агресивни препарати.'),
-      textMetafield('room_style', inferRoomStyle(product)),
-      listMetafield('product_highlights', inferProductHighlights(product, title)),
-      textMetafield('faq_1_question', 'Подходящ ли е продуктът за малко дете?'),
-      longMetafield('faq_1_answer', 'Проверете препоръчаната възраст, размерите и инструкциите за безопасност преди покупка.'),
-      textMetafield('faq_2_question', 'Включен ли е матрак?'),
-      longMetafield('faq_2_answer', 'Матрак е включен само ако това е изрично посочено в описанието на продукта.'),
-      textMetafield('faq_3_question', 'Как се поддържа продуктът?'),
-      longMetafield('faq_3_answer', 'Препоръчва се нежно почистване с мека кърпа и спазване на указанията на производителя.')
+      textMetafield('room_style', content.roomStyle),
+      listMetafield('product_highlights', content.productHighlights),
+      textMetafield('faq_1_question', content.faq1Question),
+      longMetafield('faq_1_answer', content.faq1Answer),
+      textMetafield('faq_2_question', content.faq2Question),
+      longMetafield('faq_2_answer', content.faq2Answer),
+      textMetafield('faq_3_question', content.faq3Question),
+      longMetafield('faq_3_answer', content.faq3Answer)
     ])
   }
+}
+
+function productContentForCategory(product: SourceProduct, title: string, descriptionText: string, sourceTag?: string) {
+  if (isSameCategory(sourceTag ?? '', 'Настолни лампи')) {
+    return {
+      suitableAge: 'Подходящо за бюро, нощно шкафче или кът за четене в детска стая.',
+      whatsIncluded: inferLampWhatsIncluded(descriptionText),
+      parentBenefit: 'Помага да създадете удобна светлина за четене, учене или спокойна вечерна рутина.',
+      safetyNote: 'Използвайте продукта според инструкциите на производителя и с подходяща крушка според указаната мощност.',
+      roomStyle: 'осветление за детска стая',
+      productHighlights: [
+        'Подходящо за детска стая',
+        'Мек декоративен акцент',
+        'Практично осветление'
+      ],
+      faq1Question: 'Включена ли е крушка?',
+      faq1Answer: 'Крушката не е включена, освен ако не е изрично посочено в описанието.',
+      faq2Question: 'Какъв тип крушка е подходящ?',
+      faq2Answer: 'Използвайте съвместима крушка според фасунгата и препоръките на производителя.',
+      faq3Question: 'Подходяща ли е за детска стая?',
+      faq3Answer: 'Да, моделът е подбран за уютна детска стая. Монтажът трябва да се извърши според инструкциите.'
+    }
+  }
+
+  if (isSameCategory(sourceTag ?? '', 'Детски таванни лампи')) {
+    return {
+      suitableAge: 'Подходящо за уютно осветление в детска стая, кът за игра или зона за четене.',
+      whatsIncluded: inferLampWhatsIncluded(descriptionText),
+      parentBenefit: 'Помага да създадете по-уютна и спокойна атмосфера в детската стая.',
+      safetyNote: 'Монтажът трябва да се извърши според инструкциите на производителя. Използвайте подходяща крушка според указаната мощност.',
+      roomStyle: 'осветление за детска стая',
+      productHighlights: [
+        'Подходящо за детска стая',
+        'Мек декоративен акцент',
+        'Практично осветление'
+      ],
+      faq1Question: 'Включена ли е крушка?',
+      faq1Answer: 'Крушката не е включена, освен ако не е изрично посочено в описанието.',
+      faq2Question: 'Какъв тип крушка е подходящ?',
+      faq2Answer: 'Използвайте съвместима крушка според фасунгата и препоръките на производителя.',
+      faq3Question: 'Подходяща ли е за детска стая?',
+      faq3Answer: 'Да, моделът е подбран за уютна детска стая. Монтажът трябва да се извърши според инструкциите.'
+    }
+  }
+
+  if (isSameCategory(sourceTag ?? '', 'Детска стая')) {
+    return {
+      suitableAge: 'Подходящо за обзавеждане на детска стая, според размера, нуждите и употребата на продукта.',
+      whatsIncluded: inferKidsRoomWhatsIncluded(product, descriptionText),
+      parentBenefit: 'Помага да създадете по-подредена, уютна и функционална детска стая.',
+      safetyNote: 'Използвайте продукта според инструкциите на производителя. При мебели за деца препоръчваме стабилен монтаж и употреба под подходящ надзор.',
+      roomStyle: 'уютна детска стая',
+      productHighlights: [
+        'Практично решение за детска стая',
+        'Подходящо за ежедневна употреба',
+        'Лесно за комбиниране'
+      ],
+      faq1Question: 'Подходящ ли е продуктът за детска стая?',
+      faq1Answer: 'Да, продуктът е подбран за обзавеждане на детска стая. Винаги съобразявайте размерите и употребата с възрастта и нуждите на детето.',
+      faq2Question: 'Какво е включено в комплекта?',
+      faq2Answer: 'Включени са основните елементи за сглобяване според описанието на производителя. Аксесоари и декорация са включени само ако са изрично посочени.',
+      faq3Question: 'Има ли нужда от сглобяване?',
+      faq3Answer: 'Повечето мебели се доставят разглобени и се сглобяват според инструкциите на производителя.'
+    }
+  }
+
+  return {
+    suitableAge: inferAge(product),
+    whatsIncluded: inferWhatsIncluded(descriptionText),
+    parentBenefit: 'Създаден за по-спокойна детска стая, лесна ежедневна употреба и уютна среда за сън и игра.',
+    safetyNote: 'Използвайте продукта според инструкциите на производителя и под надзор, съобразен с възрастта на детето.',
+    roomStyle: inferRoomStyle(product),
+    productHighlights: inferProductHighlights(product, title),
+    faq1Question: 'Подходящ ли е продуктът за малко дете?',
+    faq1Answer: 'Проверете препоръчаната възраст, размерите и инструкциите за безопасност преди покупка.',
+    faq2Question: 'Включен ли е матрак?',
+    faq2Answer: 'Матрак е включен само ако това е изрично посочено в описанието на продукта.',
+    faq3Question: 'Как се поддържа продуктът?',
+    faq3Answer: 'Препоръчва се нежно почистване с мека кърпа и спазване на указанията на производителя.'
+  }
+}
+
+function filterSourceProductsForTransform(products: SourceProduct[], sourceTag?: string): SourceProduct[] {
+  if (isSameCategory(sourceTag ?? '', 'Настолни лампи')) {
+    return products.filter(isChildTableLampProduct)
+  }
+
+  return products
+}
+
+function isChildTableLampProduct(product: SourceProduct): boolean {
+  const title = normalizeCategoryValue(product.title)
+  return /детска\s+(?:led\s+|лед\s+)?настолна\s+лампа/u.test(title)
+}
+
+function isLampSourceTag(sourceTag?: string): boolean {
+  return isSameCategory(sourceTag ?? '', 'Детски таванни лампи') || isSameCategory(sourceTag ?? '', 'Настолни лампи')
 }
 
 function inferTemplateSuffix(product: SourceProduct, sourceTag?: string): string | undefined {
@@ -139,7 +242,7 @@ function isSameCategory(left: string, right: string): boolean {
   return normalizeCategoryValue(left) === normalizeCategoryValue(right)
 }
 
-function summarizeTemplateAssignments(source: SourceExportFile, products: BabyMoodProduct[]) {
+function summarizeTemplateAssignments(source: SourceExportFile, products: BabyMoodProduct[], skippedProductCount = 0) {
   const templateCounts: Record<string, number> = {}
   const collectionCounts: Record<string, number> = {}
   for (const product of products) {
@@ -152,6 +255,7 @@ function summarizeTemplateAssignments(source: SourceExportFile, products: BabyMo
 
   return {
     detectedSourceTag: source.source.tag ?? null,
+    skippedProductCount,
     assignedTemplateSuffixes: templateCounts,
     assignedCollections: collectionCounts
   }
@@ -290,13 +394,15 @@ function inferSupplementalCollections(product: SourceProduct, sourceTag: string)
   return []
 }
 
-function mapTags(product: SourceProduct, collections: string[]): string[] {
+function mapTags(product: SourceProduct, collections: string[], sourceTag?: string): string[] {
   const mapped = product.tags
     .map((tag) => tag.trim().toLowerCase())
     .filter(Boolean)
     .map((tag) => tag.replace(/^mebelcenter[:\s-]*/i, ''))
 
-  return Array.from(new Set(['baby-mood', 'import-mebelcenter', ...collections, ...mapped]))
+  const categoryTags = isSameCategory(sourceTag ?? '', 'Настолни лампи') ? ['детски настолни лампи', 'осветление'] : []
+
+  return Array.from(new Set(['baby-mood', 'import-mebelcenter', ...collections, ...categoryTags, ...mapped]))
 }
 
 function normalizeProductType(product: SourceProduct): string {
@@ -398,6 +504,42 @@ function inferWhatsIncluded(descriptionText: string): string {
   }
 
   return 'Включени са основните елементи за сглобяване според описанието на производителя. Матрак и декорация са включени само ако са изрично посочени.'
+}
+
+function inferKidsRoomWhatsIncluded(product: SourceProduct, descriptionText: string): string {
+  if (isBedProduct(product) && mentionsMattress(descriptionText)) {
+    return inferWhatsIncluded(descriptionText)
+  }
+
+  return 'Включени са основните елементи за сглобяване според описанието на производителя. Декорация и допълнителни аксесоари са включени само ако са изрично посочени.'
+}
+
+function mentionsMattress(value: string): boolean {
+  return value.toLowerCase().includes('матрак')
+}
+
+function inferLampWhatsIncluded(descriptionText: string): string {
+  const details = [
+    'Включено е осветителното тяло.',
+    'Крушка не е включена, освен ако не е изрично посочено.'
+  ]
+  const socket = inferBulbSocket(descriptionText)
+  const wattage = inferMaxWattage(descriptionText)
+
+  if (socket) details.push(`Фасунга: ${socket}.`)
+  if (wattage) details.push(`Максимална мощност: ${wattage}.`)
+
+  return details.join(' ')
+}
+
+function inferBulbSocket(value: string): string | undefined {
+  const match = value.match(/\bE\s*27\b/i) ?? value.match(/\bЕ\s*27\b/i)
+  return match ? 'E27' : undefined
+}
+
+function inferMaxWattage(value: string): string | undefined {
+  const match = value.match(/(?:максим(?:ум|ална)?|max\.?)\s*(\d{1,3})\s*W/iu)
+  return match ? `${match[1]}W` : undefined
 }
 
 function normalizeDescriptionText(html: string): string {
