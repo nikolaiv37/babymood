@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
+import { randomUUID } from 'node:crypto'
 
 import { XMLParser } from 'fast-xml-parser'
 
@@ -10,6 +11,7 @@ type SupplierKey = 'b2bmarkt' | 'megapap' | 'symetron'
 type SupplierArg = SupplierKey | 'all'
 type PlannedAction =
   | 'update_weight'
+  | 'update_inventory'
   | 'skip_no_weight'
   | 'skip_same_weight'
   | 'skip_unmatched'
@@ -17,7 +19,9 @@ type PlannedAction =
   | 'would_update_inventory'
   | 'skip_same_stock'
   | 'skip_no_stock'
+  | 'skip_invalid_stock'
   | 'skip_missing_location'
+  | 'failed'
 
 interface SupplierConfig {
   key: SupplierKey
@@ -33,6 +37,7 @@ interface SupplierItem {
   supplier: SupplierKey
   sku: string
   stockQty?: number
+  invalidStock?: boolean
   weightKg?: number
   raw: Record<string, string>
 }
@@ -70,6 +75,13 @@ interface ProductVariantsBulkUpdateResponse {
   }
 }
 
+interface InventorySetQuantitiesResponse {
+  inventorySetQuantities: {
+    userErrors: Array<{ field: string[] | null; message: string; code?: string | null }>
+    inventoryAdjustmentGroup: { id: string; reason: string } | null
+  }
+}
+
 interface RunRow {
   sku: string
   productTitle?: string
@@ -81,8 +93,10 @@ interface RunRow {
   supplierWeightKg?: number
   currentShopifyInventory?: number
   supplierStock?: number
+  stockInvalid?: boolean
   action: PlannedAction
   reason?: string
+  error?: string
 }
 
 const SUPPLIERS: Record<SupplierKey, SupplierConfig> = {
@@ -133,6 +147,7 @@ async function main() {
   const sku = getStringArg(args, 'sku')
   const outputFile = getStringArg(args, 'output-file')
   const supplierEnvFile = getStringArg(args, 'supplier-env-file')
+  const locationIdArg = getStringArg(args, 'location-id')
   const includeWeights = inventoryOnly ? false : true
   const includeInventory = weightsOnly ? false : true
 
@@ -157,12 +172,9 @@ async function main() {
     inventoryOnly,
     limit,
     sku,
+    locationId: locationIdArg,
     supplierEnvFile: supplierEnvFile ? '[provided]' : undefined
   })
-
-  if (apply && includeInventory) {
-    throw new Error('Inventory apply is intentionally not enabled yet. Run inventory dry-runs first and add an explicit reviewed apply step later.')
-  }
 
   const supplierItems = await loadSupplierItems(supplierKeys, logger)
   const supplierBySku = collapseSupplierItemsBySku(supplierItems)
@@ -174,18 +186,28 @@ async function main() {
 
   const client = createShopifyAdminClient('babymood', logger)
   const variants = await fetchBabyMoodVariants(client, { sku, limit })
-  const locationId = includeInventory ? await getInventoryLocationId(client, logger) : undefined
+  const locationId = includeInventory ? await getInventoryLocationId(client, logger, locationIdArg) : undefined
   const rows = buildPlanRows(variants, supplierBySku, {
     includeWeights,
     includeInventory,
-    locationId
+    locationId,
+    apply
   })
 
   if (includeWeights && apply) {
     const weightRows = rows.filter((row) => row.action === 'update_weight' && row.productId && row.variantId && row.supplierWeightKg)
     await applyWeightUpdates(client, weightRows, logger)
-  } else {
+  }
+
+  if (includeInventory && apply) {
+    const inventoryRows = rows.filter((row) => row.action === 'update_inventory' && row.inventoryItemId && row.supplierStock !== undefined)
+    await applyInventoryUpdates(client, inventoryRows, locationId, logger)
+  }
+
+  if (!apply) {
     logger.success('Dry run finished. No Shopify writes were made.', { logFile: logger.filePath })
+  } else {
+    logger.success('Supplier sync apply finished', { logFile: logger.filePath })
   }
 
   const summary = summarizeRows(rows, {
@@ -268,17 +290,19 @@ function parseSupplierFeed(xml: string, config: SupplierConfig): SupplierItem[] 
     const sku = normalizeSku(extractText(record[config.skuTag]))
     if (!sku) return []
 
-    const stockQty = parseStock(extractText(record[config.stockTag]))
+    const rawStock = extractText(record[config.stockTag])
+    const stockQty = parseStock(rawStock)
     const weightKg = parseWeightKg(extractText(record[config.weightTag]))
     return [
       {
         supplier: config.key,
         sku,
         stockQty,
+        invalidStock: rawStock.trim().length > 0 && stockQty === undefined,
         weightKg,
         raw: {
           [config.skuTag]: extractText(record[config.skuTag]),
-          [config.stockTag]: extractText(record[config.stockTag]),
+          [config.stockTag]: rawStock,
           [config.weightTag]: extractText(record[config.weightTag])
         }
       }
@@ -366,12 +390,22 @@ async function fetchBabyMoodVariants(
     }))
 }
 
-async function getInventoryLocationId(client: ReturnType<typeof createShopifyAdminClient>, logger: ReturnType<typeof createLogger>): Promise<string | undefined> {
-  const configured = process.env.BABYMOOD_SHOPIFY_LOCATION_ID || process.env.SHOPIFY_LOCATION_ID
-  if (configured) return configured
+async function getInventoryLocationId(
+  client: ReturnType<typeof createShopifyAdminClient>,
+  logger: ReturnType<typeof createLogger>,
+  locationIdArg?: string
+): Promise<string | undefined> {
+  const configured = locationIdArg || process.env.BABYMOOD_SHOPIFY_LOCATION_ID || process.env.SHOPIFY_LOCATION_ID
+  if (configured) {
+    logger.info('Using configured Shopify location for inventory sync', {
+      locationId: configured,
+      source: locationIdArg ? '--location-id' : process.env.BABYMOOD_SHOPIFY_LOCATION_ID ? 'BABYMOOD_SHOPIFY_LOCATION_ID' : 'SHOPIFY_LOCATION_ID'
+    })
+    return configured
+  }
 
   const query = `#graphql
-    query LocationsForInventoryDryRun {
+    query LocationsForInventorySync {
       locations(first: 20) {
         nodes { id name isActive fulfillsOnlineOrders }
       }
@@ -379,15 +413,20 @@ async function getInventoryLocationId(client: ReturnType<typeof createShopifyAdm
   `
   const data = await client.graphql<LocationsResponse>(query)
   const active = data.locations.nodes.filter((location) => location.isActive)
-  const primary = active.find((location) => location.fulfillsOnlineOrders) ?? active[0]
+  const onlineFulfillmentLocations = active.filter((location) => location.fulfillsOnlineOrders)
+  const primary = active.length === 1 ? active[0] : onlineFulfillmentLocations.length === 1 ? onlineFulfillmentLocations[0] : undefined
   if (!primary) {
-    logger.warn('No active Shopify location found for inventory comparison')
-    return undefined
+    throw new Error(
+      `Multiple or no active Shopify locations found. Set BABYMOOD_SHOPIFY_LOCATION_ID or pass --location-id. Active locations: ${
+        active.map((location) => `${location.name} (${location.id})`).join(', ') || 'none'
+      }`
+    )
   }
 
-  logger.info('Using Shopify location for inventory comparison', {
+  logger.warn('BABYMOOD_SHOPIFY_LOCATION_ID was not set; discovered Shopify location for inventory sync', {
     locationId: primary.id,
-    locationName: primary.name
+    locationName: primary.name,
+    activeLocationCount: active.length
   })
   return primary.id
 }
@@ -395,7 +434,7 @@ async function getInventoryLocationId(client: ReturnType<typeof createShopifyAdm
 function buildPlanRows(
   variants: BabyMoodVariant[],
   supplierBySku: Map<string, SupplierItem>,
-  options: { includeWeights: boolean; includeInventory: boolean; locationId?: string }
+  options: { includeWeights: boolean; includeInventory: boolean; locationId?: string; apply: boolean }
 ): RunRow[] {
   const rows: RunRow[] = []
 
@@ -421,7 +460,7 @@ function buildPlanRows(
     }
 
     if (options.includeInventory) {
-      rows.push(buildInventoryRow(variant, supplierItem, options.locationId))
+      rows.push(buildInventoryRow(variant, supplierItem, options.locationId, options.apply))
     }
   }
 
@@ -445,12 +484,13 @@ function buildWeightRow(variant: BabyMoodVariant, supplierItem: SupplierItem): R
   return { ...base, action: 'update_weight' }
 }
 
-function buildInventoryRow(variant: BabyMoodVariant, supplierItem: SupplierItem, locationId?: string): RunRow {
+function buildInventoryRow(variant: BabyMoodVariant, supplierItem: SupplierItem, locationId: string | undefined, apply: boolean): RunRow {
   const base = baseRow(variant, supplierItem)
   if (!locationId) return { ...base, action: 'skip_missing_location', reason: 'No active Shopify location available' }
+  if (supplierItem.invalidStock) return { ...base, action: 'skip_invalid_stock', reason: 'Supplier stock is not a valid non-negative integer' }
   if (supplierItem.stockQty === undefined) return { ...base, action: 'skip_no_stock', reason: 'Supplier feed has no stock value' }
   if (variant.inventoryQuantity === supplierItem.stockQty) return { ...base, action: 'skip_same_stock' }
-  return { ...base, action: 'would_update_inventory' }
+  return { ...base, action: apply ? 'update_inventory' : 'would_update_inventory' }
 }
 
 function baseRow(variant: BabyMoodVariant, supplierItem: SupplierItem): RunRow {
@@ -465,6 +505,7 @@ function baseRow(variant: BabyMoodVariant, supplierItem: SupplierItem): RunRow {
     supplierWeightKg: supplierItem.weightKg,
     currentShopifyInventory: variant.inventoryQuantity,
     supplierStock: supplierItem.stockQty,
+    stockInvalid: supplierItem.invalidStock,
     action: 'skip_unmatched'
   }
 }
@@ -518,6 +559,71 @@ async function applyWeightUpdates(client: ReturnType<typeof createShopifyAdminCl
   }
 }
 
+async function applyInventoryUpdates(
+  client: ReturnType<typeof createShopifyAdminClient>,
+  rows: RunRow[],
+  locationId: string | undefined,
+  logger: ReturnType<typeof createLogger>
+) {
+  if (!locationId) {
+    throw new Error('Inventory apply requires a Shopify location ID')
+  }
+
+  if (rows.length === 0) {
+    logger.success('No inventory updates to apply')
+    return
+  }
+
+  logger.warn('Inventory apply uses supplier stock as the target quantity', {
+    safety: 'changeFromQuantity is sent as a compare-and-swap guard using the current Shopify inventory read by this script.'
+  })
+
+  const mutation = `#graphql
+    mutation InventorySetQuantities($input: InventorySetQuantitiesInput!, $idempotencyKey: String!) {
+      inventorySetQuantities(input: $input) @idempotent(key: $idempotencyKey) {
+        userErrors { field message code }
+        inventoryAdjustmentGroup { id reason }
+      }
+    }
+  `
+
+  for (const batch of chunkArray(rows, 50)) {
+    const idempotencyKey = randomUUID()
+    const input = {
+      name: 'available',
+      reason: 'correction',
+      referenceDocumentUri: 'logistics://babymood-supplier-inventory-sync',
+      quantities: batch.map((row) => ({
+        inventoryItemId: row.inventoryItemId,
+        locationId,
+        quantity: row.supplierStock,
+        changeFromQuantity: row.currentShopifyInventory
+      }))
+    }
+
+    const data = await client.graphql<InventorySetQuantitiesResponse>(mutation, { input, idempotencyKey })
+    const errors = data.inventorySetQuantities.userErrors
+    if (errors.length > 0) {
+      for (const row of batch) {
+        row.action = 'failed'
+        row.error = JSON.stringify(errors)
+      }
+      logger.error('Inventory batch failed', {
+        locationId,
+        count: batch.length,
+        userErrors: errors
+      })
+      throw new Error(`inventorySetQuantities userErrors: ${JSON.stringify(errors)}`)
+    }
+
+    logger.success('Inventory batch updated', {
+      locationId,
+      count: batch.length,
+      adjustmentGroupId: data.inventorySetQuantities.inventoryAdjustmentGroup?.id
+    })
+  }
+}
+
 function selectedSuppliers(value: SupplierArg): SupplierKey[] {
   if (value === 'all') return ['b2bmarkt', 'megapap', 'symetron']
   if (value in SUPPLIERS) return [value as SupplierKey]
@@ -545,8 +651,10 @@ function normalizeSku(value: string | undefined | null): string {
 
 function parseStock(value: string): number | undefined {
   if (!value) return undefined
-  const parsed = Number.parseInt(value.replace(',', '.'), 10)
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined
+  const normalized = value.trim().replace(',', '.')
+  if (!/^\d+(?:\.\d+)?$/.test(normalized)) return undefined
+  const parsed = Number.parseFloat(normalized)
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : undefined
 }
 
 function parseWeightKg(value: string): number | undefined {
@@ -599,6 +707,7 @@ function summarizeRows(
 
   const matchedSkus = new Set(rows.filter((row) => row.supplier).map((row) => row.sku)).size
   const validWeightSkus = new Set(rows.filter((row) => row.supplierWeightKg !== undefined).map((row) => row.sku)).size
+  const validStockSkus = new Set(rows.filter((row) => row.supplierStock !== undefined && !row.stockInvalid).map((row) => row.sku)).size
 
   return {
     startedAt: new Date().toISOString(),
@@ -610,6 +719,7 @@ function summarizeRows(
     storeVariantRows: new Set(rows.map((row) => row.variantId).filter(Boolean)).size,
     matchedSkus,
     validWeightSkus,
+    validStockSkus,
     actions,
     locationId: meta.locationId,
     logFile: meta.logFile
@@ -625,6 +735,10 @@ function printSummary(summary: ReturnType<typeof summarizeRows>, rows: RunRow[],
   console.log(`Store variants checked: ${summary.storeVariantRows}`)
   console.log(`Matched SKUs: ${summary.matchedSkus}`)
   console.log(`Valid supplier weights: ${summary.validWeightSkus}`)
+  console.log(`Valid supplier stock SKUs: ${summary.validStockSkus}`)
+  if (summary.locationId) {
+    console.log(`Location used: ${summary.locationId}`)
+  }
   console.log('Actions:')
   for (const [action, count] of Object.entries(summary.actions).sort()) {
     console.log(`  ${action}: ${count}`)
@@ -635,7 +749,13 @@ function printSummary(summary: ReturnType<typeof summarizeRows>, rows: RunRow[],
     console.log('\nPreview:')
     for (const row of preview) {
       console.log(
-        `  ${row.sku} | ${row.supplier ?? 'unmatched'} | current=${row.currentShopifyWeight ?? '-'} | feed=${row.supplierWeightKg ?? '-'} kg | ${row.action}`
+        summary.includeInventory && !summary.includeWeights
+          ? `  ${row.sku} | ${row.supplier ?? 'unmatched'} | current stock=${row.currentShopifyInventory ?? '-'} | feed stock=${
+              row.supplierStock ?? '-'
+            } | ${row.action}`
+          : `  ${row.sku} | ${row.supplier ?? 'unmatched'} | current=${row.currentShopifyWeight ?? '-'} | feed=${
+              row.supplierWeightKg ?? '-'
+            } kg | ${row.action}`
       )
     }
   }
@@ -663,6 +783,7 @@ Options:
   --supplier=b2bmarkt|megapap|symetron|all
   --limit=10
   --sku=0509849
+  --location-id=gid://shopify/Location/...
   --output-file=logs/supplier-sync-test.json
   --supplier-env-file=/Users/nikolaiv37/projects/mebelcenter-shopify/.env
 
