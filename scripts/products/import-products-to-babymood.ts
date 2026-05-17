@@ -32,7 +32,12 @@ interface ImportSummary {
 
 interface ProductLookupResponse {
   products: {
-    nodes: Array<{ id: string; handle: string; variants: { nodes: Array<{ sku: string | null }> } }>
+    nodes: Array<{
+      id: string
+      handle: string
+      metafield: { id: string; namespace: string; key: string; value: string } | null
+      variants: { nodes: Array<{ sku: string | null }> }
+    }>
   }
 }
 
@@ -61,6 +66,13 @@ interface ProductUpdateResponse {
 interface MetafieldsSetResponse {
   metafieldsSet: {
     metafields: Array<{ id: string; namespace: string; key: string }>
+    userErrors: Array<{ field: string[] | null; message: string }>
+  }
+}
+
+interface MetafieldsDeleteResponse {
+  metafieldsDelete: {
+    deletedMetafields: Array<{ ownerId: string; namespace: string; key: string }>
     userErrors: Array<{ field: string[] | null; message: string }>
   }
 }
@@ -133,12 +145,21 @@ async function main() {
         }
 
         if (existing && allowUpdate) {
+          const staleMetafields = staleProductMetafieldsForCleanup(product, existing)
           progressLine(index + 1, total, 'UPDATE', product.handle)
           logger.dryRun('Would update existing product', {
             ...summarizeProduct(product),
             existingProductId: existing.id,
-            existingHandle: existing.handle
+            existingHandle: existing.handle,
+            staleMetafieldsToDelete: staleMetafields
           })
+          if (staleMetafields.length > 0) {
+            logger.dryRun('Would delete stale product metafields', {
+              handle: product.handle,
+              productId: existing.id,
+              metafields: staleMetafields
+            })
+          }
           updated.push(buildItem(product, 'would-update', { productId: existing.id }))
           continue
         }
@@ -172,6 +193,9 @@ async function main() {
 
         try {
           await setProductMetafields(client, productId, product)
+          if (existing) {
+            await deleteStaleProductMetafields(client, productId, product, existing)
+          }
           if (existing) {
             logger.warn('Existing product media and variants were not changed automatically', {
               productId,
@@ -313,13 +337,14 @@ function countByTemplateSuffix(items: ImportSummaryItem[]): Record<string, numbe
 async function findExistingProduct(
   client: ReturnType<typeof createShopifyAdminClient>,
   product: BabyMoodProduct
-): Promise<{ id: string; handle: string } | undefined> {
+): Promise<{ id: string; handle: string; mattressSizeMetafieldId?: string; mattressSizeMetafieldValue?: string } | undefined> {
   const query = `#graphql
     query ProductLookup($query: String!) {
       products(first: 10, query: $query) {
         nodes {
           id
           handle
+          metafield(namespace: "custom", key: "mattress_size") { id namespace key value }
           variants(first: 50) { nodes { sku } }
         }
       }
@@ -328,7 +353,14 @@ async function findExistingProduct(
   const sku = firstSku(product)
   const search = sku ? `(handle:${product.handle}) OR (sku:${sku})` : `handle:${product.handle}`
   const data = await client.graphql<ProductLookupResponse>(query, { query: search })
-  return data.products.nodes.find((node) => node.handle === product.handle || node.variants.nodes.some((variant) => variant.sku === sku))
+  const match = data.products.nodes.find((node) => node.handle === product.handle || node.variants.nodes.some((variant) => variant.sku === sku))
+  if (!match) return undefined
+  return {
+    id: match.id,
+    handle: match.handle,
+    mattressSizeMetafieldId: match.metafield?.id,
+    mattressSizeMetafieldValue: match.metafield?.value
+  }
 }
 
 async function createProduct(client: ReturnType<typeof createShopifyAdminClient>, product: BabyMoodProduct): Promise<string> {
@@ -400,6 +432,52 @@ async function setProductMetafields(
     })
     throwOnUserErrors('metafieldsSet', data.metafieldsSet.userErrors)
   }
+}
+
+async function deleteStaleProductMetafields(
+  client: ReturnType<typeof createShopifyAdminClient>,
+  productId: string,
+  product: BabyMoodProduct,
+  existing: { mattressSizeMetafieldId?: string; mattressSizeMetafieldValue?: string }
+): Promise<void> {
+  const staleMetafields = staleProductMetafieldsForCleanup(product, existing)
+  if (staleMetafields.length === 0) return
+
+  const mutation = `#graphql
+    mutation MetafieldsDelete($metafields: [MetafieldIdentifierInput!]!) {
+      metafieldsDelete(metafields: $metafields) {
+        deletedMetafields { ownerId namespace key }
+        userErrors { field message }
+      }
+    }
+  `
+
+  const data = await client.graphql<MetafieldsDeleteResponse>(mutation, {
+    metafields: staleMetafields.map((metafield) => ({
+      ownerId: productId,
+      namespace: metafield.namespace,
+      key: metafield.key
+    }))
+  })
+  throwOnUserErrors('metafieldsDelete', data.metafieldsDelete.userErrors)
+}
+
+function staleProductMetafieldsForCleanup(
+  product: BabyMoodProduct,
+  existing: { mattressSizeMetafieldId?: string; mattressSizeMetafieldValue?: string }
+): Array<{ namespace: string; key: string; currentValue?: string }> {
+  if (product.templateSuffix !== 'kids-room-product-temp') return []
+
+  const emitsMattressSize = product.metafields.some((metafield) => metafield.namespace === 'custom' && metafield.key === 'mattress_size')
+  if (emitsMattressSize || !existing.mattressSizeMetafieldId) return []
+
+  return [
+    {
+      namespace: 'custom',
+      key: 'mattress_size',
+      currentValue: existing.mattressSizeMetafieldValue
+    }
+  ]
 }
 
 async function createVariants(

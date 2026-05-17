@@ -63,7 +63,7 @@ function transformProduct(product: SourceProduct, sourceTag?: string): BabyMoodP
   const isLampCategory = isLampSourceTag(sourceTag)
   const collections = inferCollections(product, sourceTag)
   const tags = mapTags(product, collections, sourceTag)
-  const mattressSize = isLampCategory || !isBedProduct(product) ? undefined : inferMattressSize(fullText)
+  const mattressSize = shouldEmitMattressSize(product, sourceTag, fullText, title) ? inferMattressSize(fullText) : undefined
   const dimensions = inferDimensions(fullText)
   const material = inferMaterial(fullText)
   const color = inferColor(fullText)
@@ -301,6 +301,43 @@ function buildBedTitle(product: SourceProduct, title: string): string {
 function isBedProduct(product: SourceProduct): boolean {
   const haystack = `${product.title} ${product.productType} ${product.tags.join(' ')}`.toLowerCase()
   return haystack.includes('легло') || haystack.includes('bed')
+}
+
+function shouldEmitMattressSize(product: SourceProduct, sourceTag: string | undefined, fullText: string, transformedTitle: string): boolean {
+  if (isLampSourceTag(sourceTag)) return false
+
+  if (isSameCategory(sourceTag ?? '', 'Детска стая')) {
+    return isKidsRoomBedProduct(product, transformedTitle) && inferMattressSize(fullText) !== undefined
+  }
+
+  return isBedProduct(product) && inferMattressSize(fullText) !== undefined
+}
+
+function isKidsRoomBedProduct(product: SourceProduct, transformedTitle: string): boolean {
+  const title = `${product.title} ${transformedTitle}`.toLocaleLowerCase('bg-BG')
+  const nonBedTerms = [
+    'количка',
+    'етажер',
+    'рафт',
+    'библиотек',
+    'бюро',
+    'стол',
+    'столче',
+    'маса',
+    'масичка',
+    'шкаф',
+    'скрин',
+    'гардероб',
+    'пейка',
+    'кутия',
+    'закачалка',
+    'кула',
+    'пирамида',
+    'органайзер'
+  ]
+
+  if (nonBedTerms.some((term) => title.includes(term))) return false
+  return /(^|[^а-яa-z])(?:детско\s+)?(?:двуетажно\s+|метално\s+)?легло(?=$|[^а-яa-z])/u.test(title)
 }
 
 function isMontessoriBed(product: SourceProduct, title: string): boolean {
