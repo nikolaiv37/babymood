@@ -20,7 +20,9 @@
     "supplier:weights:dry": "tsx scripts/products/sync-supplier-data-to-babymood.ts --weights-only",
     "supplier:weights:apply": "tsx scripts/products/sync-supplier-data-to-babymood.ts --weights-only --apply",
     "supplier:inventory:dry": "tsx scripts/products/sync-supplier-data-to-babymood.ts --inventory-only",
-    "supplier:inventory:apply": "tsx scripts/products/sync-supplier-data-to-babymood.ts --inventory-only --apply"
+    "supplier:inventory:apply": "tsx scripts/products/sync-supplier-data-to-babymood.ts --inventory-only --apply",
+    "supplier:tracking:dry": "tsx scripts/products/sync-supplier-data-to-babymood.ts --tracking-only",
+    "supplier:tracking:apply": "tsx scripts/products/sync-supplier-data-to-babymood.ts --tracking-only --apply"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",

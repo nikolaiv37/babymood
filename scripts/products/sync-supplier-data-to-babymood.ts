@@ -12,6 +12,8 @@ type SupplierArg = SupplierKey | 'all'
 type PlannedAction =
   | 'update_weight'
   | 'update_inventory'
+  | 'enable_tracking'
+  | 'would_enable_tracking'
   | 'skip_no_weight'
   | 'skip_same_weight'
   | 'skip_unmatched'
@@ -21,6 +23,8 @@ type PlannedAction =
   | 'skip_no_stock'
   | 'skip_invalid_stock'
   | 'skip_missing_location'
+  | 'skip_already_tracked'
+  | 'skip_missing_inventory_item'
   | 'failed'
 
 interface SupplierConfig {
@@ -82,12 +86,20 @@ interface InventorySetQuantitiesResponse {
   }
 }
 
+interface InventoryItemUpdateResponse {
+  inventoryItemUpdate: {
+    inventoryItem: { id: string; tracked: boolean } | null
+    userErrors: Array<{ field: string[] | null; message: string }>
+  }
+}
+
 interface RunRow {
   sku: string
   productTitle?: string
   variantId?: string
   productId?: string
   inventoryItemId?: string
+  tracked?: boolean
   supplier?: SupplierKey
   currentShopifyWeight?: string | null
   supplierWeightKg?: number
@@ -142,24 +154,27 @@ async function main() {
   const apply = getBooleanArg(args, 'apply')
   const weightsOnly = getBooleanArg(args, 'weights-only')
   const inventoryOnly = getBooleanArg(args, 'inventory-only')
+  const trackingOnly = getBooleanArg(args, 'tracking-only')
   const supplierArg = (getStringArg(args, 'supplier') ?? 'all').toLowerCase() as SupplierArg
   const limit = getNumberArg(args, 'limit')
   const sku = getStringArg(args, 'sku')
   const outputFile = getStringArg(args, 'output-file')
   const supplierEnvFile = getStringArg(args, 'supplier-env-file')
   const locationIdArg = getStringArg(args, 'location-id')
-  const includeWeights = inventoryOnly ? false : true
-  const includeInventory = weightsOnly ? false : true
+  const selectedModeCount = [weightsOnly, inventoryOnly, trackingOnly].filter(Boolean).length
+  const includeWeights = inventoryOnly || trackingOnly ? false : true
+  const includeInventory = weightsOnly || trackingOnly ? false : true
+  const includeTracking = trackingOnly
 
-  if (weightsOnly && inventoryOnly) {
-    throw new Error('Use only one of --weights-only or --inventory-only')
+  if (selectedModeCount > 1) {
+    throw new Error('Use only one of --weights-only, --inventory-only, or --tracking-only')
   }
 
-  if (!includeWeights && !includeInventory) {
-    throw new Error('Nothing to do. Enable weights or inventory mode.')
+  if (!includeWeights && !includeInventory && !includeTracking) {
+    throw new Error('Nothing to do. Enable weights, inventory, or tracking mode.')
   }
 
-  const supplierKeys = selectedSuppliers(supplierArg)
+  const supplierKeys = includeTracking ? [] : selectedSuppliers(supplierArg)
   if (supplierEnvFile) {
     loadSupplierEnvFile(supplierEnvFile)
   }
@@ -170,29 +185,36 @@ async function main() {
     suppliers: supplierKeys,
     weightsOnly,
     inventoryOnly,
+    trackingOnly,
     limit,
     sku,
     locationId: locationIdArg,
     supplierEnvFile: supplierEnvFile ? '[provided]' : undefined
   })
 
-  const supplierItems = await loadSupplierItems(supplierKeys, logger)
+  const supplierItems = includeTracking ? [] : await loadSupplierItems(supplierKeys, logger)
   const supplierBySku = collapseSupplierItemsBySku(supplierItems)
-  logger.info('Supplier maps loaded', {
-    supplierCount: supplierKeys.length,
-    supplierSkuCount: supplierBySku.size,
-    supplierCounts: countSupplierItems(supplierItems)
-  })
+  if (includeTracking) {
+    logger.info('Tracking mode selected; supplier feeds are not loaded')
+  } else {
+    logger.info('Supplier maps loaded', {
+      supplierCount: supplierKeys.length,
+      supplierSkuCount: supplierBySku.size,
+      supplierCounts: countSupplierItems(supplierItems)
+    })
+  }
 
   const client = createShopifyAdminClient('babymood', logger)
   const variants = await fetchBabyMoodVariants(client, { sku, limit })
   const locationId = includeInventory ? await getInventoryLocationId(client, logger, locationIdArg) : undefined
-  const rows = buildPlanRows(variants, supplierBySku, {
-    includeWeights,
-    includeInventory,
-    locationId,
-    apply
-  })
+  const rows = includeTracking
+    ? buildTrackingRows(variants, apply)
+    : buildPlanRows(variants, supplierBySku, {
+        includeWeights,
+        includeInventory,
+        locationId,
+        apply
+      })
 
   if (includeWeights && apply) {
     const weightRows = rows.filter((row) => row.action === 'update_weight' && row.productId && row.variantId && row.supplierWeightKg)
@@ -202,6 +224,11 @@ async function main() {
   if (includeInventory && apply) {
     const inventoryRows = rows.filter((row) => row.action === 'update_inventory' && row.inventoryItemId && row.supplierStock !== undefined)
     await applyInventoryUpdates(client, inventoryRows, locationId, logger)
+  }
+
+  if (includeTracking && apply) {
+    const trackingRows = rows.filter((row) => row.action === 'enable_tracking' && row.inventoryItemId)
+    await applyTrackingUpdates(client, trackingRows, logger)
   }
 
   if (!apply) {
@@ -215,6 +242,7 @@ async function main() {
     suppliers: supplierKeys,
     includeWeights,
     includeInventory,
+    includeTracking,
     supplierSkuCount: supplierBySku.size,
     locationId,
     logFile: logger.filePath
@@ -467,6 +495,42 @@ function buildPlanRows(
   return rows
 }
 
+function buildTrackingRows(variants: BabyMoodVariant[], apply: boolean): RunRow[] {
+  return variants.map((variant) => {
+    const base: RunRow = {
+      sku: variant.sku,
+      productTitle: variant.product.title,
+      variantId: variant.id,
+      productId: variant.product.id,
+      inventoryItemId: variant.inventoryItem?.id,
+      tracked: variant.inventoryItem?.tracked,
+      currentShopifyInventory: variant.inventoryQuantity,
+      currentShopifyWeight: formatWeight(variant.inventoryItem?.measurement?.weight),
+      action: 'skip_already_tracked'
+    }
+
+    if (!variant.inventoryItem?.id) {
+      return {
+        ...base,
+        action: 'skip_missing_inventory_item',
+        reason: 'Variant has no inventory item ID'
+      }
+    }
+
+    if (variant.inventoryItem.tracked) {
+      return {
+        ...base,
+        action: 'skip_already_tracked'
+      }
+    }
+
+    return {
+      ...base,
+      action: apply ? 'enable_tracking' : 'would_enable_tracking'
+    }
+  })
+}
+
 function buildWeightRow(variant: BabyMoodVariant, supplierItem: SupplierItem): RunRow {
   const base = baseRow(variant, supplierItem)
   if (supplierItem.weightKg === undefined) {
@@ -624,6 +688,56 @@ async function applyInventoryUpdates(
   }
 }
 
+async function applyTrackingUpdates(
+  client: ReturnType<typeof createShopifyAdminClient>,
+  rows: RunRow[],
+  logger: ReturnType<typeof createLogger>
+) {
+  if (rows.length === 0) {
+    logger.success('No inventory tracking updates to apply')
+    return
+  }
+
+  logger.warn('Inventory tracking apply only enables tracking on untracked inventory items', {
+    field: 'InventoryItem.tracked',
+    value: true
+  })
+
+  const mutation = `#graphql
+    mutation InventoryItemUpdateTracking($id: ID!, $input: InventoryItemInput!) {
+      inventoryItemUpdate(id: $id, input: $input) {
+        inventoryItem { id tracked }
+        userErrors { field message }
+      }
+    }
+  `
+
+  for (const row of rows) {
+    if (!row.inventoryItemId) continue
+    const data = await client.graphql<InventoryItemUpdateResponse>(mutation, {
+      id: row.inventoryItemId,
+      input: { tracked: true }
+    })
+    const errors = data.inventoryItemUpdate.userErrors
+    if (errors.length > 0) {
+      row.action = 'failed'
+      row.error = JSON.stringify(errors)
+      logger.error('Inventory tracking update failed', {
+        sku: row.sku,
+        inventoryItemId: row.inventoryItemId,
+        userErrors: errors
+      })
+      continue
+    }
+
+    row.tracked = data.inventoryItemUpdate.inventoryItem?.tracked ?? true
+    logger.success('Inventory tracking enabled', {
+      sku: row.sku,
+      inventoryItemId: row.inventoryItemId
+    })
+  }
+}
+
 function selectedSuppliers(value: SupplierArg): SupplierKey[] {
   if (value === 'all') return ['b2bmarkt', 'megapap', 'symetron']
   if (value in SUPPLIERS) return [value as SupplierKey]
@@ -695,6 +809,7 @@ function summarizeRows(
     suppliers: SupplierKey[]
     includeWeights: boolean
     includeInventory: boolean
+    includeTracking: boolean
     supplierSkuCount: number
     locationId?: string
     logFile: string
@@ -715,6 +830,7 @@ function summarizeRows(
     suppliers: meta.suppliers,
     includeWeights: meta.includeWeights,
     includeInventory: meta.includeInventory,
+    includeTracking: meta.includeTracking,
     supplierSkuCount: meta.supplierSkuCount,
     storeVariantRows: new Set(rows.map((row) => row.variantId).filter(Boolean)).size,
     matchedSkus,
@@ -731,7 +847,7 @@ function printSummary(summary: ReturnType<typeof summarizeRows>, rows: RunRow[],
   console.log('Baby Mood Supplier Sync Summary')
   console.log('========================================')
   console.log(`Mode: ${summary.apply ? 'apply' : 'dry-run'}`)
-  console.log(`Suppliers: ${summary.suppliers.join(', ')}`)
+  console.log(`Suppliers: ${summary.suppliers.length > 0 ? summary.suppliers.join(', ') : 'not used'}`)
   console.log(`Store variants checked: ${summary.storeVariantRows}`)
   console.log(`Matched SKUs: ${summary.matchedSkus}`)
   console.log(`Valid supplier weights: ${summary.validWeightSkus}`)
@@ -749,7 +865,9 @@ function printSummary(summary: ReturnType<typeof summarizeRows>, rows: RunRow[],
     console.log('\nPreview:')
     for (const row of preview) {
       console.log(
-        summary.includeInventory && !summary.includeWeights
+        summary.includeTracking
+          ? `  ${row.sku} | tracked=${row.tracked ?? '-'} | inventoryItem=${row.inventoryItemId ?? '-'} | ${row.action}`
+          : summary.includeInventory && !summary.includeWeights
           ? `  ${row.sku} | ${row.supplier ?? 'unmatched'} | current stock=${row.currentShopifyInventory ?? '-'} | feed stock=${
               row.supplierStock ?? '-'
             } | ${row.action}`
@@ -774,12 +892,14 @@ Usage:
   npm run supplier:weights:dry -- --sku=0509849
   npm run supplier:weights:dry -- --limit=10
   npm run supplier:inventory:dry -- --limit=10
+  npm run supplier:tracking:dry -- --limit=10
   npm run supplier:sync:dry -- --supplier=all --limit=10
 
 Options:
   --apply
   --weights-only
   --inventory-only
+  --tracking-only
   --supplier=b2bmarkt|megapap|symetron|all
   --limit=10
   --sku=0509849

@@ -511,7 +511,7 @@ async function createVariants(
         inventoryPolicy: variant.inventoryPolicy,
         inventoryItem: {
           sku: variant.sku,
-          tracked: false
+          tracked: true
         },
         optionValues: normalizeVariantOptions(variant.selectedOptions),
         price: variant.price,
