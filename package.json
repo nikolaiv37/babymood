@@ -14,11 +14,20 @@
     "metafields:create:dry": "tsx scripts/products/create-metafield-definitions.ts",
     "metafields:create:apply": "tsx scripts/products/create-metafield-definitions.ts --apply",
     "collections:assign": "tsx scripts/products/assign-collections.ts",
-    "theme:pull": "tsx scripts/theme/pull-theme.ts"
+    "theme:pull": "tsx scripts/theme/pull-theme.ts",
+    "supplier:sync:dry": "tsx scripts/products/sync-supplier-data-to-babymood.ts",
+    "supplier:sync:apply": "tsx scripts/products/sync-supplier-data-to-babymood.ts --apply",
+    "supplier:weights:dry": "tsx scripts/products/sync-supplier-data-to-babymood.ts --weights-only",
+    "supplier:weights:apply": "tsx scripts/products/sync-supplier-data-to-babymood.ts --weights-only --apply",
+    "supplier:inventory:dry": "tsx scripts/products/sync-supplier-data-to-babymood.ts --inventory-only",
+    "supplier:inventory:apply": "tsx scripts/products/sync-supplier-data-to-babymood.ts --inventory-only --apply"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.8.0"
   }
 }
